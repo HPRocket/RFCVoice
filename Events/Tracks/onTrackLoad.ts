@@ -1,1 +1,0 @@
-// Check here if the bot is in a voice channel.

@@ -1,20 +1,14 @@
-import { ChatInputCommandInteraction, Client, GatewayIntentBits, InteractionType, Snowflake } from 'discord.js'
-import * as dotenv from 'dotenv'
-import RegisterCommands from './Classes/Commands/Initialize'
-import Queue from './Classes/Music/Queue/Queue'
-import Config from './Configs'
-import onButton from './Events/Interactions/onButton'
-import Command from './Events/Interactions/onCommand'
-import onDisconnect from './Events/Voice/onDisconnect'
-import onVoiceChannelJoin from './Events/Voice/onVoiceChannelJoin'
+import { ChatInputCommandInteraction, Client, GatewayIntentBits, Snowflake } from 'discord.js'
+import * as dotenv from 'dotenv';
     dotenv.config()
-
+import Queue from './Classes/Queue';
+import RegisterCommands from './Core/Commands';
 
 export type RFClient = Client & {
     queueMap: Map<Snowflake, Queue>
 }
 
-const client = new Client({ intents: [GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.Guilds, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers] }) as RFClient
+const client = new Client({ intents: [ GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.Guilds, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers ] }) as RFClient
 
 client.on('ready', async () => {
 
