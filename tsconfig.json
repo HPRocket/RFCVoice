@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "noImplicitAny": false,
+      "removeComments": true,
+      "preserveConstEnums": true,
+      "sourceMap": true,
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "dist",
+      "declaration": true,
+      "strictNullChecks": false,
+      "strict": false,
+      "allowSyntheticDefaultImports": true,
+    },
+    "exclude": [
+      "node_modules",
+      "./dist/**/*"
+    ]
+}
