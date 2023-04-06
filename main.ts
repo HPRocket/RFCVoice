@@ -2,7 +2,9 @@ import { ChatInputCommandInteraction, Client, GatewayIntentBits, Snowflake } fro
 import * as dotenv from 'dotenv';
     dotenv.config()
 import Queue from './Classes/Queue';
-import RegisterCommands from './Core/Commands';
+import { RegisterCommands } from './Core/Commands';
+import Configurations from './Core/Configurations';
+import onChannelChange from './Events/onChannelChange';
 
 export type RFClient = Client & {
     queueMap: Map<Snowflake, Queue>
@@ -14,16 +16,18 @@ client.on('ready', async () => {
 
     console.debug(`Logged in as ${client.user?.username}!`)
 
-    await new RegisterCommands(client).init();
+    // Register the commands
+    await RegisterCommands(client)
 
+    // Set the Queue Map
     client.queueMap = new Map<Snowflake, Queue>() // Queues are added to the map on voice channel join.
 
 
-    client.on('interactionCreate', async (interaction) => {
+    /*client.on('interactionCreate', async (interaction) => {
         
         if (interaction.inGuild()) {
 
-            const config = await new Config().getExisting(interaction.guildId)
+            const config = await new Configurations(interaction.guildId).get()
 
             if (interaction.isChatInputCommand()){//type == InteractionType.ApplicationCommand) {
     
@@ -39,26 +43,13 @@ client.on('ready', async () => {
 
         }
 
-    })
+    })*/
 
 
-
-    client.on('voiceStateUpdate', async (oldState, newState) => {
-
-        const disconnected = newState.channelId == undefined
-
-        if (disconnected) {
-
-            // onDisconnect (destroy player)
-            onDisconnect(client, oldState, newState)
-
-        } else {
-
-            // onVoiceChannelJoin (Set new channel w/ newState)
-            await onVoiceChannelJoin(client, oldState, newState)
-            
-        }
-
+    // Listen for voice channel changes
+    client.on('voiceStateUpdate', (oldState, newState) => {
+        console.log('voice state change')
+        onChannelChange(client, oldState, newState)
     })
 
 })

@@ -1,4 +1,4 @@
-import { Snowflake } from "discord.js";
+import { Snowflake, VoiceState } from "discord.js";
 import { AudioPlayer, AudioResource, createAudioPlayer } from '@discordjs/voice';
 import { EventEmitter } from 'events';
 
@@ -9,7 +9,7 @@ export default class Queue {
     player: AudioPlayer
     resources: AudioResource[]
     events: EventEmitter
-    eventNames: { track: ["trackLoad", "trackEnd"], voice: ["joinChannel", "leaveChannel"] }
+    eventNames: { track: { load: "trackLoad", end: "trackEnd" }, voice: { join: "joinChannel", leave: "leaveChannel" } }
 
     constructor(guildId: Snowflake, channelId: Snowflake) {
 
@@ -19,9 +19,25 @@ export default class Queue {
         this.resources = []
         this.events = new EventEmitter()
         this.eventNames = { 
-            track: ["trackLoad", "trackEnd"], 
-            voice: ["joinChannel", "leaveChannel"],
+            track: { 
+                load: "trackLoad", 
+                end: "trackEnd" 
+            }, 
+            voice: { 
+                join: "joinChannel", 
+                leave: "leaveChannel" 
+            } 
         }
+
+    }
+
+    listen() {
+
+        this.events.on(this.eventNames.voice.join, (oldState: VoiceState, newState: VoiceState) => {
+
+            console.log(`Joined voice channel ${newState.channelId}`)
+
+        })
 
     }
 

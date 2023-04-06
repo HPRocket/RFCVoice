@@ -1,4 +1,13 @@
 import { Snowflake } from "discord.js";
+import fs from 'fs/promises'
+
+type Config = {
+    guildId: Snowflake,
+    voiceManager: {
+        "createChannelId": Snowflake,
+        "channelCategoryId": Snowflake,
+    },
+}
 
 export default class Configurations {
 
@@ -10,16 +19,42 @@ export default class Configurations {
 
     }
 
-    create() {
+    async create(createChannel?: Snowflake, createCategory?: Snowflake): Promise<Config> {
+        return new Promise(async (res, rej) => {
 
-        // Make file (if no duplicate)
+            const data = {
+                "guildId": this.guildId,
+                "voiceManager": {
+                    "createChannelId": createChannel ?? "",
+                    "channelCategoryId": createCategory ?? ""
+                }
+            }
+
+            // Create file
+            await fs.writeFile(`../Configurations/${this.guildId}.json`, JSON.stringify(data), "utf8").catch((err) => {
+                throw false;
+            })
+
+            return data;
+            
+        })
 
     }
 
-    get() {
+    async get(): Promise<Config> {
+        return new Promise(async (res, rej) => {
 
-        // Load file (if found)
+            // Load file (if found)
+            const file = await fs.readFile(`../Configurations/${"example"}.json`, "utf8").catch(async (err) => {
+                
+                const config = await this.create(); // Create a config
+                return res(config)
 
+            })
+
+            return file ? res(JSON.parse(file)) : rej(false)
+
+        })
     }
 
 }
