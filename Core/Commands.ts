@@ -7,6 +7,9 @@ export default async function RunCommand(client: RFClient, interaction: ChatInpu
     // Get the callback
     const commandClass = Commands.find(command => command.name == interaction.commandName)?.class
 
+    // Defer the command
+    await interaction.deferReply()
+
     // Run the callback
     await new commandClass(client, interaction).callback()
 
@@ -27,7 +30,7 @@ export async function RegisterCommands(client: RFClient) {
     // Apply the commands to the test guild
     try {
 
-        const testGuild = await this.client.guilds.fetch(process.env.TESTGUILD);
+        const testGuild = await client.guilds.fetch(process.env.TESTGUILD);
         testGuild.commands.set(commandsData);
 
     } catch (e) {
