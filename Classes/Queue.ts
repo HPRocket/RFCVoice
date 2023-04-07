@@ -55,7 +55,6 @@ export default class Queue {
     /*
     
     - Move Track
-    - Go To Track Index
 
     - Visualize Queue
 
@@ -85,8 +84,9 @@ export default class Queue {
 
                 // The track to be removed is the current track
 
-                // Go to the next track
-                await this.goto(trackIndex + 1).catch((err) => { throw err; })
+                // Go to the next track (if it exists)
+                const nextTrack = await this.goto(trackIndex + 1).catch((err) => { throw err; })
+                    if (!nextTrack) this.player.stop(); // Stop the player if there is no next track
 
             }
 
@@ -114,9 +114,14 @@ export default class Queue {
 
         // Load the track
         const resource = await track.load().catch((err) => { throw err; })
-            this.currentResource = resource
         
+        // Tell the player to switch resources
+        this.player.play(resource)
 
+        // Reassign the current resource
+        this.currentResource = resource
+
+        return true;
 
     }
 
