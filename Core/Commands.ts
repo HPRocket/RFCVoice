@@ -5,7 +5,7 @@ import Commands from '../Commands'
 export default async function RunCommand(client: RFClient, interaction: ChatInputCommandInteraction) {
 
     // Get the callback
-    const commandClass = Commands.find(command => command.name == interaction.commandName)?.class
+    const commandClass = Commands.find(command => command.name === interaction.commandName)?.class
 
     // Defer the command
     await interaction.deferReply()

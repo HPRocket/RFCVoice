@@ -65,7 +65,7 @@ client.on('ready', async () => {
     // Listen for voice channel changes
     client.on('voiceStateUpdate', (oldState, newState) => {
 
-        if (newState.member.user.id == client.user.id) {
+        if (newState.member.user.id === client.user.id) {
 
             onChannelChange(client, oldState, newState)
 

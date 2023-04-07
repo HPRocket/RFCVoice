@@ -37,7 +37,7 @@ export default class Connect {
 
                 // Assume we join member's current channel
                 const member = this.interaction.member as GuildMember
-                channel = member.voice.channel
+                channel = member?.voice.channel
 
                 // If the channel is STILL undefined
                 if (!channel?.id) {
@@ -47,16 +47,14 @@ export default class Connect {
             }
 
             const queue = this.client.findQueue(this.interaction.guildId, channel.id)
+                queue.channelId = channel.id // Update the voice channel Id
 
             // Create a voice connection
-            const connection = joinVoiceChannel({
+            joinVoiceChannel({
                 channelId: channel.id,
                 guildId: channel.guildId,
                 adapterCreator: channel.guild.voiceAdapterCreator,
             })
-
-            // Add the player to the connection
-            connection.subscribe(queue.player)
 
             // Confirm the Connect operation
             return this.interaction.editReply(`Joined <#${channel.id}>`);

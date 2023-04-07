@@ -9,12 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@discordjs/opus": "^0.8.0",
     "@discordjs/voice": "^0.13.0",
     "discord.js": "^14.9.0",
     "dotenv": "^16.0.3",
+    "ffmpeg-static": "^5.1.0",
+    "play-dl": "^1.9.6",
     "tweetnacl": "^1.0.3"
-  },
-  "devDependencies": {
-    "@types/yt-search": "^2.3.2"
   }
 }
