@@ -27,7 +27,7 @@ export default function onChannelChange(client: RFClient, oldState: VoiceState, 
         const connection = getVoiceConnection(newState.guild.id)
 
         // Check if this guild has an active queue
-        const queue = client.queueMap.get(guild.id)
+        let queue = client.queueMap.get(guild.id)
         if (queue) {
 
             // Update the Class
@@ -39,12 +39,15 @@ export default function onChannelChange(client: RFClient, oldState: VoiceState, 
         } else {
 
             // Make a new queue
-            const newQueue = new Queue(guild.id, newState.channelId)
-                connection.subscribe(queue.player) // Add the player to the connection
+            queue = new Queue(guild.id, newState.channelId)
             
-            client.queueMap.set(guild.id, newQueue)
+            connection.subscribe(queue.player) // Add the player to the connection
 
         }
+
+        queue.channelId = newState.channelId // Update the voice channel Id
+
+        client.queueMap.set(guild.id, queue)
 
     }
 
