@@ -47,7 +47,11 @@ export default class Queue {
 
                 }
 
-                return target[property] = value
+                // Modify the array
+                target[property] = value;
+
+                // Return true to accept the changes
+                return true;
 
             }
         })
@@ -88,15 +92,15 @@ export default class Queue {
     }
 
 
-    async remove(trackToRemove: Track): Promise<boolean> {
+    async remove(trackIndex: number): Promise<Track> {
         return new Promise(async (res, rej) => {
             
-            // Find the track's index
-            const trackIndex = this.tracks.findIndex(track => track == trackToRemove)
+            // Find the track
+            const track = this.tracks[trackIndex]
 
-            if (trackIndex != -1) {
+            if (track) {
 
-                if (trackToRemove == this.currentTrack) {
+                if (track == this.currentTrack) {
 
                     // The track to be removed is the current track
 
@@ -110,12 +114,12 @@ export default class Queue {
                 // Delete the track
                 this.tracks.splice(trackIndex, 1)
 
-                return res(true);
+                return res(track); // Return the track that was deleted
 
             } else {
 
                 // Track was not found
-                return rej(false);
+                return rej("NOTRACK");
 
             }
 
@@ -128,13 +132,16 @@ export default class Queue {
 
             // Find the requested track
             const track = this.tracks[newTrackIndex]
-                if (!track) return rej(false);
+                if (!track) return rej("NOTRACK");
 
             // Load the track
             const resource = await track.load().catch((err) => { throw err; })
             
             // Tell the player to switch resources
             this.player.play(resource)
+
+            // Reassign the current track
+            this.currentTrack = track
 
             // Reassign the current resource
             this.currentResource = resource
@@ -149,7 +156,7 @@ export default class Queue {
 
             // Get the index of the requested track
             const trackIndex = this.tracks.findIndex(track => track == trackToMove)
-                if (trackIndex === -1) return rej(false);
+                if (trackIndex === -1) return rej("NOTRACK");
             
             // Save the value of the requested track
             const track = this.tracks[trackIndex]

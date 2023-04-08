@@ -47,7 +47,7 @@ client.on('ready', async () => {
 
             if (interaction.isChatInputCommand()){
     
-                await RunCommand(client, interaction as ChatInputCommandInteraction).catch((err) => { throw err; })
+                await RunCommand(client, interaction as ChatInputCommandInteraction).catch(() => {})
     
             }
 
@@ -80,3 +80,9 @@ client.on('ready', async () => {
 })
 
 client.login(process.env.TOKEN);
+
+// Debugging Tools \\
+process.on('unhandledRejection', (reason, p) => {
+    console.warn('Unhandled Rejection at: Promise', p, 'reason:', reason)
+    console.trace(p)
+})

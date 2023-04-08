@@ -53,7 +53,7 @@ export default async function RunCommand(client: RFClient, interaction: ChatInpu
     }
 
     // Run the callback
-    await new command.class(client, interaction).callback()
+    await new command.class(client, interaction).callback().catch(() => {})
 
 }
 
