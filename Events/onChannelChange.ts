@@ -41,7 +41,8 @@ export default function onChannelChange(client: RFClient, oldState: VoiceState, 
             // Make a new queue
             queue = new Queue(guild.id, newState.channelId)
             
-            connection.subscribe(queue.player) // Add the player to the connection
+            // Add the player to the connection
+            connection.subscribe(queue.player)
 
         }
 
