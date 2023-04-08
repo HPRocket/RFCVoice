@@ -34,7 +34,7 @@ export default class Queue {
         this.player = createAudioPlayer()
 
         this.tracks = new Proxy([], {
-            set: (target, property, value) => {
+            set: (target, requestedIndex, value) => {
                 
                 // Trigger a lifecycle check when the array is updated
                 console.log(`${this.guildId} || Track array updated`)
@@ -47,8 +47,18 @@ export default class Queue {
 
                 }
 
+                // Check if the new index is safe
+                let index = requestedIndex as any as number
+
+                if (index - 1 >= target.length) { // ex: index is 4 (fifth item), array is length 3 (fourth item missing)
+                
+                    // Shift the index to the last in the array
+                    index = target.length - 1
+
+                }
+
                 // Modify the array
-                target[property] = value;
+                target[index] = value;
 
                 // Return true to accept the changes
                 return true;
@@ -151,16 +161,13 @@ export default class Queue {
         })
     }
 
-    move(trackToMove: Track, newIndex: number) {
+    move(trackIndex: number, newIndex: number) {
         return new Promise(async (res, rej) => {
 
-            // Get the index of the requested track
-            const trackIndex = this.tracks.findIndex(track => track == trackToMove)
-                if (trackIndex === -1) return rej("NOTRACK");
-            
-            // Save the value of the requested track
+            // Find the requested track to move
             const track = this.tracks[trackIndex]
-
+                if (!track) return rej("NOTRACK");
+            
             // Remove the track
             this.tracks.splice(trackIndex, 1)
 

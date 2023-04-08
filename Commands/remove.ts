@@ -39,7 +39,8 @@ export default class Connect {
             const queue = this.client.findQueue(this.interaction.guildId, channelId)
 
             // Get the user passed index to remove (**Base 1)
-            const trackPos = this.interaction.options.getNumber("position", true)
+            let trackPos = this.interaction.options.getNumber("position", false)
+                if (!trackPos) trackPos = queue.tracks.findIndex(track => track == queue.currentTrack) + 1 // Remove the current track if an index is not specified
 
             // Remove the track
             const result = await queue.remove(trackPos - 1 /* Base-0 Fix */).catch(async (err) => {
