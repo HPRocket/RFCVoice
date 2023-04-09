@@ -19,11 +19,11 @@ export default class Queue {
     settings : {
         
         loop: {
-            trackLoop: boolean,
-            queueLoop: boolean,
+            track: boolean,
+            queue: boolean,
         },
 
-        shuffle: boolean
+        shuffle: boolean,
 
     }
 
@@ -76,6 +76,17 @@ export default class Queue {
                 join: "joinChannel", 
                 leave: "leaveChannel" 
             } 
+        }
+
+        this.settings = {
+
+            loop: {
+                track: false,
+                queue: false,
+            },
+    
+            shuffle: false,
+
         }
 
         // Run the listeners

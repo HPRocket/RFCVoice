@@ -1,5 +1,9 @@
+import { Snowflake } from "discord.js"
+
 export default {
 
-    "channelJoin": "Joined <#${var1}>" // Need to find a way to parse var into this
+    "channelJoin": (channelId: Snowflake) => {
+        return `Joined <#${channelId}>`
+    },
 
 }

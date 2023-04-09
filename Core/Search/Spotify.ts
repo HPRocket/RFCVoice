@@ -18,7 +18,7 @@ export default async function SpotifySearch(query: string): Promise<Track[]> {
             const source = await search(`${track.name} ${artistNames}`, { source: { youtube: "video" }}).catch((err) => { throw err; })
     
             // Create the track
-            tracks.push(new Track(track.name, artistNames, "YOUTUBE", source[0].url))
+            tracks.push(new Track(track.name, artistNames, "YOUTUBE", source[0].url, source[0].durationInSec))
 
         }
 
@@ -32,7 +32,7 @@ export default async function SpotifySearch(query: string): Promise<Track[]> {
         const source = await search(`${track.name} ${artistNames}`, { source: { youtube: "video" }}).catch((err) => { throw err; })
 
         // Create the track
-        tracks.push(new Track(track.name, artistNames, "YOUTUBE", source[0].url))
+        tracks.push(new Track(track.name, artistNames, "YOUTUBE", source[0].url, source[0].durationInSec))
 
     }
 

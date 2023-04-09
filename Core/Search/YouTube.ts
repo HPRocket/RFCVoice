@@ -16,7 +16,7 @@ export default async function YouTubeSearch(query: string): Promise<Track[]> {
 
         for (const video of videos) {
             // Push the track
-            tracks.push(new Track(video.title, video.channel.name, "YOUTUBE", video.url))
+            tracks.push(new Track(video.title, video.channel.name, "YOUTUBE", video.url, video.durationInSec))
         }
 
     } else if (queryType == "video" && query.match(youtubeVideoLink) /* May incorrectly validate https://play-dl.github.io/modules.html#yt_validate */) {
@@ -25,7 +25,7 @@ export default async function YouTubeSearch(query: string): Promise<Track[]> {
         const video = source.video_details
 
         // Push the link only
-        tracks.push(new Track(video.title, video.channel.name, "YOUTUBE", query))
+        tracks.push(new Track(video.title, video.channel.name, "YOUTUBE", query, video.durationInSec))
 
     } else { // queryType is a search / other
 
@@ -36,7 +36,7 @@ export default async function YouTubeSearch(query: string): Promise<Track[]> {
         const video = source[0]
 
         // Push the first result of the search
-        tracks.push(new Track(video.title, video.channel.name, "YOUTUBE", source[0].url))
+        tracks.push(new Track(video.title, video.channel.name, "YOUTUBE", source[0].url, video.durationInSec))
 
     }
 

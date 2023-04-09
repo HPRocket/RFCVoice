@@ -36,16 +36,18 @@ export default class Track {
     author: string
     sourceType: "YOUTUBE" | "DISCORD"
     source: string // URL
+    lengthSec: number // How long is the source in seconds
     shufflePlayed: boolean // Was the track already played in the shuffle queue or not?
 
     private resource: AudioResource<unknown> | undefined
 
-    constructor(title: string, author: string, sourceType: "DISCORD" | "YOUTUBE", source: string, shufflePlayed?: boolean) {
+    constructor(title: string, author: string, sourceType: "DISCORD" | "YOUTUBE", source: string, lengthSec: number, shufflePlayed?: boolean) {
         this.title = title
         this.author = author
         this.sourceType = sourceType
         this.source = source
-        this.shufflePlayed = shufflePlayed ? shufflePlayed : false
+        this.lengthSec = lengthSec
+        this.shufflePlayed = shufflePlayed ?? false
     }
 
     async load() {

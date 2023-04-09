@@ -1,4 +1,4 @@
-import { yt_validate } from 'play-dl';
+import getVideoDurationInSeconds from 'get-video-duration';
 import Track from '../../Classes/Track';
 import SpotifySearch from './Spotify';
 import YouTubeSearch from './YouTube';
@@ -63,7 +63,7 @@ export default class Search {
             if (this.source == "DISCORD") {
 
                 // Mark it as a Discord CDN link
-                return res([ new Track("title", "author", "DISCORD", this.query) ])
+                return res([ new Track("title", "author", "DISCORD", this.query, Number(getVideoDurationInSeconds(this.query))) ])
 
             }
 
