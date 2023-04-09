@@ -28,21 +28,34 @@ export default class QueueEmbed extends Embed {
         this.renew()
 
         // Calculate the current track page
-        
-        // Calc page count
-        // (sets of 25) Calc which set of 25 the current track is in
         const currentTrackIndex = this.queue.tracks.findIndex(track => track == this.queue.currentTrack)
-        for (let i = 0; i < this.pages.length; i++) {
+        let currentTrackPage = 0
+        for (let page = 1; page < this.pages.length; page++) {
 
+            // Get the range of pages that the current track might fall under given the page number
+            
+            /*
+                Example:
+                Page 2
+                25 * (2 - 1) < x < 2 * 25
+            */
 
+            const lowerRange = 25 * (page - 1)
+            const higherRange = 25 * page
+
+            const withinRange = lowerRange < currentTrackIndex && currentTrackIndex <= higherRange
+
+            if (withinRange) {
+                currentTrackPage = page
+            } else {
+                continue;
+            }
 
         }
 
-        const currentTrackPage = 0
-
         if (pageIndex) {
 
-            // Page does not exist
+            // If requested page does not exist
             if (!this.pages[pageIndex]) {
 
                 // Set currentPage to the first one
@@ -52,8 +65,8 @@ export default class QueueEmbed extends Embed {
 
         }
 
-        // FEATURE: if index not specified, get the page of the current track.
-        this.pageIndex = pageIndex ?? currentTrackPage // Default to page 1 (index 0) // no
+        // If index not specified, use the page of the current track.
+        this.pageIndex = pageIndex ?? currentTrackPage
 
         const row = new ActionRowBuilder()
             .addComponents([
@@ -91,7 +104,7 @@ export default class QueueEmbed extends Embed {
 
     }
 
-    private build({ queue, userId }: { queue: Queue, userId: Snowflake }) {
+    private build({ queue }: { queue: Queue }) {
 
         // Parse description info from these criteria
         let queueStatus: string
@@ -141,11 +154,12 @@ export default class QueueEmbed extends Embed {
 
         }
 
+        // Save all the embed info
+        this.title = "Queue"
+        this.description = `Channel: <#${queue.channelId}>\n${queueStatus}\n${timeRemaining}`
+
         // Save all the pages
         this.pages = pages
-
-        // Record the user who made this embed
-        this.userId = userId
 
         // Save the Queue object
         this.queue = queue
@@ -159,14 +173,11 @@ export default class QueueEmbed extends Embed {
 
     renew() {
         
-        console.log('embed renew')
-
         // Rebuild the pages and information
-        this.build({ queue: this.queue, userId: this.userId })
+        this.build({ queue: this.queue })
 
         // Clear the old timer
         if (this.expire) {
-            console.log('timer clear')
             clearTimeout(this.expire)
         }
 

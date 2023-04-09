@@ -22,23 +22,15 @@ export default async function RunButton(client: RFClient, interaction: ButtonInt
         // Make sure the user is authorized to use this embed
         if (embed.userId !== interaction.user.id) return await interaction.reply({ content: "Make your own embed using `/queue` to use this feature.", ephemeral: true })
 
+        // Renew the embed's content and timer
+        embed.renew()
+
         // Flip the page either forwards or backwards
         const queueEmbed = embed.constructEmbed(buttonId === "previousQueuePage" ? embed.pageIndex - 1 : embed.pageIndex + 1)
-
-        // Renew the embed's timer
-        embed.renew()
 
         // Edit the original message with the updated embed
         return await interaction.update({ embeds: [ queueEmbed.embed ], components: queueEmbed.components })
 
     }
-
-    // Get the Button's ID
-    // (assume queue button)
-    // Get the Queue
-    // Validate the user
-    // Flip the page
-    // Reconstruct the embed
-    // Send the embed 
 
 }

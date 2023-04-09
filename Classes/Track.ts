@@ -10,7 +10,7 @@ export async function createResource(track: Track, seekSec?: number) {
         }*/).catch(err => {
             throw err;
         })
-        console.log(stream.type)
+
         const resource = createAudioResource(stream.stream, {
             inputType: stream.type,
         });

@@ -40,10 +40,7 @@ export default class Queue {
             set: (target, requestedIndex, value) => {
                 
                 // Trigger a lifecycle check when the array is updated
-                console.log(`${this.guildId} || Track array updated`)
-
-                // The bot is not playing anything
-                if (this.player.state.status == AudioPlayerStatus.Idle) {
+                if (this.player.state.status == AudioPlayerStatus.Idle) { // The bot is not playing anything
 
                     // Get the bot to go to the next track
                     this.advance().catch((err) => {})
@@ -246,7 +243,7 @@ export default class Queue {
 
     async advance() {
 
-        console.debug('advancing')
+        // console.debug('advancing')
 
         // Get the current track's index
         const currentIndex = this.tracks.findIndex(track => track == this.currentTrack)
