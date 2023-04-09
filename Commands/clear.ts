@@ -20,13 +20,13 @@ export default class Connect {
 
     async callback() {
 
-        return new Promise((res, rej) => {
+        return new Promise(async (res, rej) => {
 
             const queue = this.client.queueMap.get(this.interaction.guildId)
             const result = queue.clear()
 
             // Confirm the Clear operation
-            return this.interaction.editReply(`Cleared the queue.`);
+            return res(await this.interaction.editReply(`Cleared the queue.`));
 
         })
 
