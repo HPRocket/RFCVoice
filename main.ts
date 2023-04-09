@@ -6,6 +6,7 @@ import Queue from './Classes/Queue';
 import RunCommand, { RegisterCommands } from './Core/Commands';
 import Configurations from './Core/Configurations';
 import onChannelChange from './Events/onChannelChange';
+import RunButton from './Core/Buttons';
 
 export type RFClient = Client & {
     queueMap: Map<Snowflake, Queue>,
@@ -52,15 +53,15 @@ client.on('ready', async () => {
 
             if (interaction.isChatInputCommand()){
     
-                await RunCommand(client, interaction as ChatInputCommandInteraction).catch(() => {})
+                await RunCommand(client, interaction).catch(() => {})
     
             }
 
-            /*(if (interaction.isButton()) {
+            if (interaction.isButton()) {
 
-                await onButton(interaction, client).catch((err) => { throw err; })
+                await RunButton(client, interaction).catch(() => {})
 
-            }*/
+            }
 
         }
 

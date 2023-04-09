@@ -26,11 +26,17 @@ export default class QueueCommand {
 
             const queue = this.client.queueMap.get(this.interaction.guildId)
 
-            const embed = new QueueEmbed({ queue: queue }).constructEmbed(0)
-            console.log(embed)
+            const queueDisplay = new QueueEmbed({ queue: queue, interaction: this.interaction })
+            const queueEmbed = queueDisplay.constructEmbed(0)
 
             // Send the queue's embed
-            return res(await this.interaction.editReply({ embeds: [ embed ]}));
+            const message = await this.interaction.editReply({ embeds: [ queueEmbed.embed ], components: queueEmbed.components })
+
+            // Register the resulting message with the embed internally
+            queueDisplay.messageId = message.id
+            queue.queueEmbeds.push(queueDisplay)
+
+            return res(message);
 
         })
 

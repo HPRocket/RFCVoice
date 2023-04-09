@@ -1,4 +1,5 @@
-import { APIEmbedField, EmbedData, HexColorString } from "discord.js";
+import { APIActionRowComponent, APIMessageActionRowComponent, ActionRowBuilder, ButtonBuilder } from "discord.js";
+import { APIEmbedField, APIEmbed, HexColorString } from "discord.js";
 
 export default class Embed {
 
@@ -16,9 +17,12 @@ export default class Embed {
 
     }
 
-    constructEmbed(): EmbedData {
+    constructEmbed(): { embed: APIEmbed, components?: ActionRowBuilder<ButtonBuilder>[] } {
 
-        return {}
+        return {
+            embed: {},
+            components: [],
+        }
 
     }
 

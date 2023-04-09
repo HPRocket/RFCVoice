@@ -2,6 +2,7 @@ import { Snowflake, VoiceState } from "discord.js";
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer } from '@discordjs/voice';
 import { EventEmitter } from 'events';
 import Track from "./Track";
+import QueueEmbed from "../Locale/Responses/Queue";
 
 export default class Queue {
 
@@ -13,8 +14,10 @@ export default class Queue {
     currentTrack: Track
     currentResource: AudioResource
 
+    queueEmbeds: QueueEmbed[]
+
     events: EventEmitter
-    eventNames: { track: { load: "trackLoad", end: "trackEnd" }, voice: { join: "joinChannel", leave: "leaveChannel" } }
+    eventNames: { track: { load: "trackLoad", end: "trackEnd" }, voice: { join: "joinChannel", leave: "leaveChannel" }, embed: { expire: "embedExpire" } }
 
     settings : {
         
@@ -66,16 +69,21 @@ export default class Queue {
             }
         })
 
+        this.queueEmbeds = []
+
         this.events = new EventEmitter()
         this.eventNames = { 
             track: { 
                 load: "trackLoad", 
-                end: "trackEnd" 
+                end: "trackEnd",
             }, 
             voice: { 
                 join: "joinChannel", 
-                leave: "leaveChannel" 
-            } 
+                leave: "leaveChannel",
+            },
+            embed: {
+                expire: "embedExpire",
+            },
         }
 
         this.settings = {
@@ -271,19 +279,29 @@ export default class Queue {
             console.log(`Joined voice channel ${newState.channelId}`)
         })
 
+        this.events.on(this.eventNames.embed.expire, (embed: QueueEmbed) => {
+
+            // Incase the original index changes, we use the instance to get the index instead
+            const targetIndex = this.queueEmbeds.findIndex(existingEmbed => existingEmbed == embed)
+
+            // Remove the embed from the record
+            this.queueEmbeds.splice(targetIndex, 1)
+
+        })
+
         this.player.on('stateChange', (oldState, newState) => {
             if (newState.status == AudioPlayerStatus.Idle) {
 
                 // Go to the next track
-                this.advance().catch((err) => {})
+                this.advance().catch(() => {})
 
             }
         })
 
-        this.player.on('debug', error => {
+        /*this.player.on('debug', error => {
             console.debug(error)
             //console.error(`Error: ${error.message} with resource ${(error.resource.metadata as any).title}`);
-        })
+        })*/
 
     }
 
