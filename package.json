@@ -1,6 +1,6 @@
 {
-  "name": "rfc-voice-package-v3",
-  "version": "1.0.0",
+  "name": "rocketfuel-voice",
+  "version": "3.0.0",
   "description": "",
   "main": "main.ts",
   "scripts": {
