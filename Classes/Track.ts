@@ -31,10 +31,6 @@ export async function createResource(track: Track, seekSec?: number) {
 
 export default class Track {
 
-    // Give each track an ID
-    // The ID can just be a number
-    // To prevent overlaps, just increment a number from the greatest number already existing in the queue; this will refer to this track.
-
     // Basic Track Info \\
     title: string
     author: string

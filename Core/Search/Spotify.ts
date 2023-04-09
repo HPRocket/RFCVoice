@@ -6,11 +6,8 @@ export default async function SpotifySearch(query: string): Promise<Track[]> {
     const tracks: Track[] = []
 
     const result = await spotify(query)
-    console.log(result.type)
 
     if (result.type === "playlist" || result.type === "album") {
-
-        console.log('playlist or album')
 
         const playlistTracks = await (result as SpotifyPlaylist).all_tracks()
         for (const track of playlistTracks) {
