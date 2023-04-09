@@ -17,13 +17,13 @@ export default class Connect {
     }
 
     info = {
-        name: 'play',
-        description: "Play a video (YouTube URL).",
+        name: 'goto',
+        description: "Go to a specific track in the queue.",
         options: [
             {
-                name: "url",
-                description: "YouTube URL for the track.",
-                type: ApplicationCommandOptionType.String,
+                name: "position",
+                description: "The position of the track in the queue to go to.",
+                type: ApplicationCommandOptionType.Number,
                 required: true
             },
         ]
@@ -33,6 +33,9 @@ export default class Connect {
 
         return new Promise(async (res, rej) => {
 
+            // Get the user passed index to query
+            const trackIndex = this.interaction.options.getNumber("position", true)
+
             // Get the user's current voice channel
             const member = this.interaction.member as GuildMember
             const channelId = member?.voice.channelId
@@ -40,17 +43,11 @@ export default class Connect {
             // Get the queue for this guild
             const queue = this.client.findQueue(this.interaction.guildId, channelId)
 
-            // Get the user passed source to query
-            const trackSource = this.interaction.options.getString("url", true)
-
-            // Search for the track(s)
-            const tracks = await new Search(trackSource).getTracks()
-
-            // Add the new track(s)
-            queue.add(tracks)
+            // Go to the track (if possible)
+            const tracks = await queue.goto(trackIndex - 1)
 
             // Confirm the Play operation
-            return await this.interaction.editReply(`Playing ${trackSource}!`);
+            return await this.interaction.editReply(`Went to ${trackIndex}.`);
 
         })
 

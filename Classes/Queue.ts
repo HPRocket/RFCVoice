@@ -94,10 +94,14 @@ export default class Queue {
 
     */
 
-    add(track: Track) {
+    add(tracks: Track[]) {
 
-        // Add the new track to the array of tracks
-        this.tracks.push(track)
+        for (const track of tracks) {
+
+            // Add the new track to the array of tracks
+            this.tracks.push(track)
+
+        }
 
     }
 
@@ -137,7 +141,7 @@ export default class Queue {
     }
 
 
-    async goto(newTrackIndex: number): Promise<boolean> {
+    async goto(newTrackIndex: number): Promise<{ oldTrack: Track, newTrack: Track }> {
         return new Promise(async (res, rej) => {
 
             // Find the requested track
@@ -147,21 +151,50 @@ export default class Queue {
             // Load the track
             const resource = await track.load().catch((err) => { throw err; })
             
+            // Reassign the current resource
+            this.currentResource = resource
+
             // Tell the player to switch resources
-            this.player.play(resource)
+            this.player.play(this.currentResource)
+
+            // Save the old track
+            const oldTrack = this.currentTrack
 
             // Reassign the current track
             this.currentTrack = track
 
-            // Reassign the current resource
-            this.currentResource = resource
-
-            return res(true);
+            return res({
+                oldTrack: oldTrack,
+                newTrack: this.currentTrack,
+            })
 
         })
     }
 
-    move(trackIndex: number, newIndex: number) {
+    async skip(): Promise<{ oldTrack: Track, newTrack: Track }> {
+        return new Promise(async (res, rej) => {
+
+            // Find if the next track exists
+            const nextIndex = this.tracks.findIndex(track => track == this.currentTrack) + 1
+            const nextTrack = this.tracks[nextIndex]
+                if (nextIndex === 0 /* -1 + 1 = 0 */ || !nextTrack) {
+                    // End the current track
+                    this.player.stop()
+
+                    // Return there was no new track played
+                    return res({
+                        oldTrack: this.currentTrack,
+                        newTrack: undefined,
+                    })
+                }
+            
+            // Go to the next track
+            return res(await this.goto(nextIndex));
+
+        })
+    }
+
+    move(trackIndex: number, newIndex: number): Promise<boolean> {
         return new Promise(async (res, rej) => {
 
             // Find the requested track to move
@@ -181,12 +214,13 @@ export default class Queue {
 
     async advance() {
 
+        console.debug('advancing')
+
         // Get the current track's index
         const currentIndex = this.tracks.findIndex(track => track == this.currentTrack)
 
+        // There is no old / current track
         if (currentIndex == -1) {
-
-            // There is no old / current track
 
             // Start the queue from the top
             return await this.goto(0).catch((err) => { throw err })
@@ -220,6 +254,11 @@ export default class Queue {
                 this.advance().catch((err) => {})
 
             }
+        })
+
+        this.player.on('debug', error => {
+            console.debug(error)
+            //console.error(`Error: ${error.message} with resource ${(error.resource.metadata as any).title}`);
         })
 
     }

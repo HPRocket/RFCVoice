@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, Snowflake } from 'discord.js'
 import * as dotenv from 'dotenv';
     dotenv.config()
+import play from 'play-dl'
 import Queue from './Classes/Queue';
 import RunCommand, { RegisterCommands } from './Core/Commands';
 import Configurations from './Core/Configurations';
@@ -43,6 +44,10 @@ client.on('ready', async () => {
 
     client.on('interactionCreate', async (interaction) => {
         
+        if (play.is_expired()) {
+            await play.refreshToken() // Refresh Spotify Token if it's expired
+        }
+
         if (interaction.inGuild()) {
 
             if (interaction.isChatInputCommand()){

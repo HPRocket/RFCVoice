@@ -5,14 +5,21 @@ export async function createResource(track: Track, seekSec?: number) {
 
     if (track.sourceType === "YOUTUBE") {
 
-        let stream = await playdl.stream(track.source, {
+        let stream = await playdl.stream(track.source/*, {
             seek: seekSec ? seekSec : 0,
-        }).catch(err => {
+        }*/).catch(err => {
             throw err;
         })
-        return createAudioResource(stream.stream, {
+        console.log(stream.type)
+        const resource = createAudioResource(stream.stream, {
             inputType: stream.type,
         });
+        resource.playStream.on('error', error => {
+
+            console.error('Error:', error.message, 'with track', resource.metadata);
+            
+        })
+        return resource
 
     } else if (track.sourceType === "DISCORD") {
 
