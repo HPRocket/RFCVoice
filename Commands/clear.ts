@@ -22,9 +22,8 @@ export default class Connect {
 
         return new Promise((res, rej) => {
 
-
             const queue = this.client.queueMap.get(this.interaction.guildId)
-            queue.clear()
+            const result = queue.clear()
 
             // Confirm the Clear operation
             return this.interaction.editReply(`Cleared the queue.`);
