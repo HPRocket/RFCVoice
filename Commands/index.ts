@@ -4,6 +4,7 @@ import remove from './remove'
 import move from './move'
 import skip from './skip'
 import goto from './goto'
+import clear from './clear'
 
 export default [
 
@@ -14,5 +15,6 @@ export default [
     { name: "move", class: move, autoJoin: false, sameChannel: true },
     { name: "skip", class: skip, autoJoin: false, sameChannel: true },
     { name: "goto", class: goto, autoJoin: false, sameChannel: true },
+    { name: "clear", class: clear, autoJoin: false, sameChannel: true },
 
 ]

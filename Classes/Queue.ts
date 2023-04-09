@@ -140,6 +140,19 @@ export default class Queue {
         })
     }
 
+    clear() {
+
+        // Reset to original state
+        this.player.stop()
+        this.currentTrack = undefined
+        this.currentResource = undefined
+
+        // Wipe the tracks array
+        this.tracks.splice(0, this.tracks.length)
+
+        return true;
+
+    }
 
     async goto(newTrackIndex: number): Promise<{ oldTrack: Track, newTrack: Track }> {
         return new Promise(async (res, rej) => {
