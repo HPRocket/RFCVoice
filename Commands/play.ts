@@ -3,6 +3,7 @@ import { RFClient } from "../main";
 import { joinVoiceChannel } from "@discordjs/voice";
 import Track from "../Classes/Track";
 import Search from "../Core/Search";
+import ActionEmbed from "../Responses/Action";
 
 export default class Connect {
 
@@ -39,6 +40,7 @@ export default class Connect {
 
             // Get the queue for this guild
             const queue = this.client.findQueue(this.interaction.guildId, channelId)
+                queue.eventsChannel = this.interaction.channelId // Update the events channel based on this command
 
             // Get the user passed source to query
             const trackSource = this.interaction.options.getString("url", true)
@@ -47,10 +49,20 @@ export default class Connect {
             const tracks = await new Search(trackSource).getTracks()
 
             // Add the new track(s)
-            queue.add(tracks)
+            const result = queue.add(tracks)
 
             // Confirm the Play operation
-            return await this.interaction.editReply(`Playing ${trackSource}!`);
+            if (tracks.length > 1) {
+
+                // Multiple Tracks
+                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Queued ${tracks.length} tracks.`, icon: "📝" }).constructEmbed().embed ]});
+
+            } else {
+                
+                // One Track Only
+                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Queued [${tracks[0].title}](${tracks[0].source}) by ${"`"}${tracks[0].author}${"`"}`, icon: "📝" }).constructEmbed().embed ]});
+                
+            }
 
         })
 

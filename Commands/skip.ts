@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
 import { RFClient } from "../main";
 import { joinVoiceChannel } from "@discordjs/voice";
+import ActionEmbed from "../Responses/Action";
 
 export default class Connect {
 
@@ -30,7 +31,7 @@ export default class Connect {
             const result = await queue.skip()
 
             // Confirm the Skip operation
-            return res(await this.interaction.editReply(`Skipped ${result.oldTrack.title} by ${result.oldTrack.author}.`));
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Skipped [${result.newTrack.title}](${result.newTrack.source}) by ${"`"}${result.newTrack.author}${"`"}.`, icon: "⏭️" }).constructEmbed().embed ] }));
 
         })
 

@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { RFClient } from "../main";
-import Track from "../Classes/Track";
+import ActionEmbed from "../Responses/Action";
 
-export default class Connect {
+export default class Remove {
 
     client: RFClient
     interaction: ChatInputCommandInteraction
@@ -44,12 +44,12 @@ export default class Connect {
 
             // Remove the track
             const result = await queue.remove(trackPos - 1 /* Base-0 Fix */).catch(async (err) => {
-                await this.interaction.editReply(`Could not find a track at ${"`"}${trackPos}${"`"}.`)
+                await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Could not find a track at ${"`"}${trackPos}${"`"}.`, icon: "🛑" }).constructEmbed(true).embed ] })
                 throw err;
             })
 
             // Confirm the Remove operation
-            return this.interaction.editReply(`Removed ${result.title} by ${result.author} from position ${"`"}${trackPos}${"`"}.`);
+            return this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Removed [${result.title}](${result.source}) by ${"`"}${result.author}${"`"} from position ${"`"}${trackPos}${"`"}.`, icon: "🗑️" }).constructEmbed().embed ] });
 
         })
 

@@ -1,8 +1,8 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { RFClient } from "../main";
-import Track from "../Classes/Track";
+import ActionEmbed from "../Responses/Action";
 
-export default class Connect {
+export default class Move {
 
     client: RFClient
     interaction: ChatInputCommandInteraction
@@ -51,15 +51,15 @@ export default class Connect {
             const newPos = this.interaction.options.getNumber("position", true)
 
             // Move the track
-            const result = await queue.move(trackPos - 1, newPos - 1).catch((err) => {
+            const result = await queue.move(trackPos - 1, newPos - 1).catch(async (err) => {
 
-                this.interaction.editReply("Unable to move the track.")
+                await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Could not move the track to ${"`"}${newPos}${"`"}.`, icon: "🛑" }).constructEmbed(true).embed ] })
                 throw err;
 
             })
-
+            
             // Confirm the Move operation
-            return this.interaction.editReply(`Moved the track at ${trackPos} to ${newPos}.`); // This is technically untrue if we account for the interal fix the Array automatically does.
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Moved the track at ${"`"}${trackPos}${"`"} to ${"`"}${newPos}${"`"}`, icon: "🛒" }).constructEmbed().embed ]})); // This is technically untrue if we account for the interal fix the Array automatically does.
 
         })
 

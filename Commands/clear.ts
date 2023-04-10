@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { RFClient } from "../main";
+import ActionEmbed from "../Responses/Action";
 
 export default class Connect {
 
@@ -26,7 +27,7 @@ export default class Connect {
             const result = queue.clear()
 
             // Confirm the Clear operation
-            return res(await this.interaction.editReply(`Cleared the queue.`));
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: "Cleared the queue.", icon: "🗑️" }) ] }));
 
         })
 

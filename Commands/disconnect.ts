@@ -2,8 +2,9 @@ import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember,
 import { RFClient } from "../main";
 import { getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
 import Track from "../Classes/Track";
+import ActionEmbed from "../Responses/Action";
 
-export default class Connect {
+export default class Disconnect {
 
     client: RFClient
     interaction: ChatInputCommandInteraction
@@ -22,14 +23,15 @@ export default class Connect {
 
     async callback() {
 
-        return new Promise((res, rej) => {
+        return new Promise(async (res, rej) => {
 
+            const channel = (await this.interaction.guild.members.fetch(this.client.user.id)).voice.channelId
             const connection = getVoiceConnection(this.interaction.guildId)
 
             connection.destroy()
 
             // Confirm the Disconnect operation
-            return this.interaction.editReply(`Disconnected from the voice channel.`);
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Disconnected from <#${channel}>.`, icon: "🚪" }).constructEmbed().embed ] }));
 
         })
 

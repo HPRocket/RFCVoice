@@ -1,5 +1,5 @@
 import { AudioPlayerStatus } from "@discordjs/voice";
-import Queue from "../../Classes/Queue";
+import Queue from "../Classes/Queue";
 import Embed from "./Embed";
 import { APIEmbedField, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Snowflake } from "discord.js";
 

@@ -1,10 +1,8 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { RFClient } from "../main";
-import { joinVoiceChannel } from "@discordjs/voice";
-import Track from "../Classes/Track";
-import Search from "../Core/Search";
+import ActionEmbed from "../Responses/Action";
 
-export default class Connect {
+export default class GoTo {
 
     client: RFClient
     interaction: ChatInputCommandInteraction
@@ -33,7 +31,7 @@ export default class Connect {
 
         return new Promise(async (res, rej) => {
 
-            // Get the user passed index to query
+            // Get the user passed index to query (Base 1)
             const trackIndex = this.interaction.options.getNumber("position", true)
 
             // Get the user's current voice channel
@@ -42,12 +40,18 @@ export default class Connect {
 
             // Get the queue for this guild
             const queue = this.client.findQueue(this.interaction.guildId, channelId)
+                queue.eventsChannel = this.interaction.channelId // Update the events channel based on this command
 
             // Go to the track (if possible)
-            const tracks = await queue.goto(trackIndex - 1)
+            const track = await queue.goto(trackIndex - 1).catch(async (err) => {
 
-            // Confirm the Play operation
-            return await this.interaction.editReply(`Went to ${trackIndex}.`);
+                await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Could not go to ${"`"}${trackIndex}${"`"}.`, icon: "🛑" }).constructEmbed(true).embed ] })
+                throw err;
+
+            })
+
+            // Confirm the Go To operation
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Went to ${"`"}${trackIndex}${"`"}\n[${track.newTrack.title}](${track.newTrack.source}) by ${"`"}${track.newTrack.author}${"`"}.`, icon: "⏭️" }).constructEmbed().embed ] }));
 
         })
 

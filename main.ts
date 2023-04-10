@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Client, GatewayIntentBits, Snowflake } from 'discord.js'
+import { ActivityType, ChatInputCommandInteraction, Client, GatewayIntentBits, Snowflake } from 'discord.js'
 import * as dotenv from 'dotenv';
     dotenv.config()
 import play from 'play-dl'
@@ -17,6 +17,7 @@ const client = new Client({ intents: [ GatewayIntentBits.GuildVoiceStates, Gatew
 
 client.on('ready', async () => {
 
+    client.user.setActivity('🎶', { type: ActivityType.Listening })
     console.debug(`Logged in as ${client.user?.username}!`)
 
     // Register the commands
@@ -34,7 +35,7 @@ client.on('ready', async () => {
 
         } else {
 
-            const newQueue = new Queue(guildId, channelId)
+            const newQueue = new Queue(client, guildId, channelId)
             client.queueMap.set(guildId, newQueue)
             return newQueue
 

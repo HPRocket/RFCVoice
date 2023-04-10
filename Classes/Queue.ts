@@ -2,7 +2,9 @@ import { Snowflake, VoiceState } from "discord.js";
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer } from '@discordjs/voice';
 import { EventEmitter } from 'events';
 import Track from "./Track";
-import QueueEmbed from "../Locale/Responses/Queue";
+import QueueEmbed from "../Responses/Queue";
+import onTrackLoad from "../Events/onTrackLoad";
+import { RFClient } from "../main";
 
 export default class Queue {
 
@@ -18,8 +20,9 @@ export default class Queue {
 
     events: EventEmitter
     eventNames: { track: { load: "trackLoad", end: "trackEnd" }, voice: { join: "joinChannel", leave: "leaveChannel" }, embed: { expire: "embedExpire" } }
+    eventsChannel: Snowflake
 
-    settings : {
+    settings: {
         
         loop: {
             track: boolean,
@@ -29,8 +32,14 @@ export default class Queue {
         shuffle: boolean,
 
     }
+    
+    state: {
 
-    constructor(guildId: Snowflake, channelId: Snowflake) {
+        loading: boolean,
+
+    }
+
+    constructor(client: RFClient, guildId: Snowflake, channelId: Snowflake) {
 
         this.guildId = guildId
         this.channelId = channelId
@@ -40,7 +49,7 @@ export default class Queue {
             set: (target, requestedIndex, value) => {
                 
                 // Trigger a lifecycle check when the array is updated
-                if (this.player.state.status == AudioPlayerStatus.Idle) { // The bot is not playing anything
+                if (this.player.state.status == AudioPlayerStatus.Idle && !this.state.loading) { // The bot is not playing anything & not loading any track (playlist bug fix)
 
                     // Get the bot to go to the next track
                     this.advance().catch((err) => {})
@@ -94,15 +103,19 @@ export default class Queue {
 
         }
 
+        this.state = {
+
+            loading: false,
+
+        }
+
         // Run the listeners
-        this.listeners()
+        this.listeners(client)
 
     }
 
     /*
     
-    - Visualize Queue
-
     (Later)
     - Toggle Shuffle
     - Loop
@@ -177,8 +190,14 @@ export default class Queue {
             const track = this.tracks[newTrackIndex]
                 if (!track) return rej("NOTRACK");
 
+            // Tell the queue it's waiting to load a track
+            this.state.loading = true
+
             // Load the track
             const resource = await track.load().catch((err) => { throw err; })
+
+            // Tell the queue it's done loading the track
+            this.state.loading = false
             
             // Reassign the current resource
             this.currentResource = resource
@@ -191,6 +210,9 @@ export default class Queue {
 
             // Reassign the current track
             this.currentTrack = track
+
+            // Signal to the module the track has changed
+            this.events.emit(this.eventNames.track.load, track)
 
             return res({
                 oldTrack: oldTrack,
@@ -243,8 +265,6 @@ export default class Queue {
 
     async advance() {
 
-        // console.debug('advancing')
-
         // Get the current track's index
         const currentIndex = this.tracks.findIndex(track => track == this.currentTrack)
 
@@ -270,7 +290,7 @@ export default class Queue {
         
     }
 
-    listeners() {
+    listeners(client: RFClient) {
 
         this.events.on(this.eventNames.voice.join, (oldState: VoiceState, newState: VoiceState) => {
             console.log(`Joined voice channel ${newState.channelId}`)
@@ -283,6 +303,13 @@ export default class Queue {
 
             // Remove the embed from the record
             this.queueEmbeds.splice(targetIndex, 1)
+
+        })
+
+        this.events.on(this.eventNames.track.load, async (newTrack: Track) => {
+
+            if (!this.eventsChannel) return;
+            return await onTrackLoad(client, newTrack, this.eventsChannel)
 
         })
 

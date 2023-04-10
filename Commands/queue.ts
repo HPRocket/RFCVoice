@@ -1,7 +1,6 @@
-import { ChatInputCommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { RFClient } from "../main";
-import { joinVoiceChannel } from "@discordjs/voice";
-import QueueEmbed from "../Locale/Responses/Queue";
+import QueueEmbed from "../Responses/Queue";
 
 export default class QueueCommand {
 
