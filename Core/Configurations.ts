@@ -1,5 +1,5 @@
 import { Snowflake } from "discord.js";
-import fs from 'fs/promises'
+import * as fs from 'fs/promises'
 
 type Config = {
     guildId: Snowflake,
@@ -31,8 +31,8 @@ export default class Configurations {
             }
 
             // Create file
-            await fs.writeFile(`../Configurations/${this.guildId}.json`, JSON.stringify(data), "utf8").catch((err) => {
-                throw false;
+            await fs.writeFile(`./Configurations/${this.guildId}.json`, JSON.stringify(data), "utf8").catch((err) => {
+                throw err;
             })
 
             return data;
@@ -45,8 +45,9 @@ export default class Configurations {
         return new Promise(async (res, rej) => {
 
             // Load file (if found)
-            const file = await fs.readFile(`../Configurations/${"example"}.json`, "utf8").catch(async (err) => {
+            const file = await fs.readFile(`./Configurations/${this.guildId}.json`, "utf8").catch(async (err) => {
                 
+                console.error(err)
                 const config = await this.create(); // Create a config
                 return res(config)
 

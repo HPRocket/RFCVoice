@@ -1,4 +1,4 @@
-import { ActivityType, ChatInputCommandInteraction, Client, GatewayIntentBits, Snowflake } from 'discord.js'
+import { ActivityType, ChannelType, Client, GatewayIntentBits, Snowflake } from 'discord.js'
 import * as dotenv from 'dotenv';
     dotenv.config()
 import play from 'play-dl'
@@ -7,10 +7,14 @@ import RunCommand, { RegisterCommands } from './Core/Commands';
 import Configurations from './Core/Configurations';
 import onChannelChange from './Events/onChannelChange';
 import RunButton from './Core/Buttons';
+import VoiceManager from './Core/Voice/VoiceManager';
 
 export type RFClient = Client & {
     queueMap: Map<Snowflake, Queue>,
     findQueue: (guildId: Snowflake, channelId: Snowflake) => Queue,
+
+    voiceManagers: Map<Snowflake, VoiceManager>,
+    findVoiceManager: (guildId: Snowflake) => Promise<VoiceManager>,
 }
 
 const client = new Client({ intents: [ GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.Guilds, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers ] }) as RFClient
@@ -43,7 +47,43 @@ client.on('ready', async () => {
 
     }
 
+    // Set the Voice Manager Map
+    client.voiceManagers = new Map<Snowflake, VoiceManager>()
+    client.findVoiceManager = async (guildId: Snowflake) => {
 
+        const voiceManager = client.voiceManagers.get(guildId)
+
+        if (voiceManager) {
+
+            return voiceManager;
+
+        } else {
+
+            // Get the config
+            const config = await new Configurations(guildId).get()
+
+            // Create a the voice manager
+            const newVoiceManager = new VoiceManager(guildId, config.voiceManager.createChannelId, config.voiceManager.channelCategoryId)
+
+            // Save the voice manager
+            client.voiceManagers.set(guildId, newVoiceManager)
+
+            // Return the voice manager
+            return newVoiceManager;
+
+        }
+
+    }
+    client.guilds.cache.forEach(async (guild) => {
+
+        // Get the config for each guild
+        const config = await new Configurations(guild.id).get()
+
+        // Create a voice manager for each guild
+        client.voiceManagers.set(guild.id, new VoiceManager(guild.id, config.voiceManager.createChannelId, config.voiceManager.channelCategoryId))
+
+    })
+    
     client.on('interactionCreate', async (interaction) => {
         
         if (play.is_expired()) {
@@ -70,18 +110,29 @@ client.on('ready', async () => {
 
 
     // Listen for voice channel changes
-    client.on('voiceStateUpdate', (oldState, newState) => {
+    client.on('voiceStateUpdate', async (oldState, newState) => {
 
         if (newState.member.user.id === client.user.id) {
 
+            // Run queue updates when the client's voice channel changes
             onChannelChange(client, oldState, newState)
 
-        } else {
+        }
 
-            // Insert Private Voice Channel Feature Here
+        // Let the Voice Manager handle
+        await (await client.findVoiceManager(newState.guild.id)).handleStateChange(oldState, newState)
+        
+    })
+
+    // Listen for permissions updates
+    client.on('channelUpdate', async (oldChannel, newChannel) => {
+        if (oldChannel.type === ChannelType.GuildVoice && newChannel.type === ChannelType.GuildVoice) {
+
+            // Get the voice manager
+            const voiceManager = await client.findVoiceManager(oldChannel.guildId)
+            await voiceManager.watchPermissions(oldChannel, newChannel)
 
         }
-        
     })
 
 })
@@ -91,5 +142,5 @@ client.login(process.env.TOKEN);
 // Debugging Tools \\
 process.on('unhandledRejection', (reason, p) => {
     console.warn('Unhandled Rejection at: Promise', p, 'reason:', reason)
-    console.trace(p)
+    // console.trace(p)
 })
