@@ -1,36 +1,25 @@
-import { ChatInputCommandInteraction, Client, GuildMember, Snowflake } from "discord.js";
-import BaseCommand from "../Classes/Commands/BaseCommand";
-import QueueEmbed from "../Classes/Music/Embeds/QueueEmbed";
-import { configType } from "../Configs";
-import { RFClient } from "../main";
+import ActionEmbed from "../Responses/Action";
+import Locale from "../Responses/Locale";
+import RFCommand from "./BaseCommand";
 
-export default class Clear extends BaseCommand {
-
-    super(client: Client) {
-        this.client = client
-    }
-
-    config = {
-        updateVoiceAnnouncementsChannel: false,
-        sameVC: true,
-        canAutoJoinVC: false,
-    }
+export default class ClearCommand extends RFCommand {
 
     info = {
         name: 'clear',
-        description: "Clears all tracks currently in the queue.",
+        description: "Clear the queue.",
     }
 
-    async callback(client: RFClient, interaction: ChatInputCommandInteraction, config: configType) {
+    async callback() {
 
         return new Promise(async (res, rej) => {
 
-            const guildId = interaction.guildId as Snowflake
-            const member = interaction.member as GuildMember
+            const locale = new Locale(this.interaction)
 
-            client.queueMap.get(guildId).guildQueue = []
-            
-            return interaction.editReply("Cleared the queue."/*{ embeds: [ basicEmbed( `🗑️｜Cleared the queue.`, colorPalette.trackOperation ) ] }*/)
+            const queue = this.client.queueMap.get(this.interaction.guildId)
+            const result = queue.clear()
+
+            // Confirm the Clear operation
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.clear, icon: "🗑️" }).constructEmbed().embed ] }));
 
         })
 

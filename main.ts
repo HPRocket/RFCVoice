@@ -1,45 +1,106 @@
-import { ChatInputCommandInteraction, Client, GatewayIntentBits, InteractionType, Snowflake } from 'discord.js'
-import * as dotenv from 'dotenv'
-import RegisterCommands from './Classes/Commands/Initialize'
-import Queue from './Classes/Music/Queue/Queue'
-import Config from './Configs'
-import onButton from './Events/Interactions/onButton'
-import Command from './Events/Interactions/onCommand'
-import onDisconnect from './Events/Voice/onDisconnect'
-import onVoiceChannelJoin from './Events/Voice/onVoiceChannelJoin'
+import { ActivityType, ChannelType, Client, GatewayIntentBits, Snowflake } from 'discord.js'
+import * as dotenv from 'dotenv';
     dotenv.config()
-
+import play from 'play-dl'
+import Queue from './Classes/Queue';
+import RunCommand, { RegisterCommands } from './Core/Commands';
+import Configurations from './Core/Configurations';
+import onChannelChange from './Events/onChannelChange';
+import RunButton from './Core/Buttons';
+import VoiceManager from './Core/Voice/VoiceManager';
 
 export type RFClient = Client & {
-    queueMap: Map<Snowflake, Queue>
+    queueMap: Map<Snowflake, Queue>,
+    findQueue: (guildId: Snowflake, channelId: Snowflake) => Queue,
+
+    voiceManagers: Map<Snowflake, VoiceManager>,
+    findVoiceManager: (guildId: Snowflake) => Promise<VoiceManager>,
 }
 
-const client = new Client({ intents: [GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.Guilds, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers] }) as RFClient
+const client = new Client({ intents: [ GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.Guilds, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers ] }) as RFClient
 
 client.on('ready', async () => {
 
+    client.user.setActivity('🎶', { type: ActivityType.Listening })
     console.debug(`Logged in as ${client.user?.username}!`)
 
-    await new RegisterCommands(client).init();
+    // Register the commands
+    await RegisterCommands(client)
 
+    // Set the Queue Map
     client.queueMap = new Map<Snowflake, Queue>() // Queues are added to the map on voice channel join.
+    client.findQueue = (guildId: Snowflake, channelId: Snowflake) => { // If we're not sure a queue exists, this is a safe way to fetch it
 
+        const queue = client.queueMap.get(guildId)
 
+        if (queue) {
+
+            return queue
+
+        } else {
+
+            const newQueue = new Queue(client, guildId, channelId)
+            client.queueMap.set(guildId, newQueue)
+            return newQueue
+
+        }
+
+    }
+
+    // Set the Voice Manager Map
+    client.voiceManagers = new Map<Snowflake, VoiceManager>()
+    client.findVoiceManager = async (guildId: Snowflake) => {
+
+        const voiceManager = client.voiceManagers.get(guildId)
+
+        if (voiceManager) {
+
+            return voiceManager;
+
+        } else {
+
+            // Get the config
+            const config = await new Configurations(guildId).get()
+
+            // Create a the voice manager
+            const newVoiceManager = new VoiceManager(guildId, config.voiceManager.createChannelId, config.voiceManager.channelCategoryId)
+
+            // Save the voice manager
+            client.voiceManagers.set(guildId, newVoiceManager)
+
+            // Return the voice manager
+            return newVoiceManager;
+
+        }
+
+    }
+    client.guilds.cache.forEach(async (guild) => {
+
+        // Get the config for each guild
+        const config = await new Configurations(guild.id).get()
+
+        // Create a voice manager for each guild
+        client.voiceManagers.set(guild.id, new VoiceManager(guild.id, config.voiceManager.createChannelId, config.voiceManager.channelCategoryId))
+
+    })
+    
     client.on('interactionCreate', async (interaction) => {
         
+        if (play.is_expired()) {
+            await play.refreshToken() // Refresh Spotify Token if it's expired
+        }
+
         if (interaction.inGuild()) {
 
-            const config = await new Config().getExisting(interaction.guildId)
-
-            if (interaction.isChatInputCommand()){//type == InteractionType.ApplicationCommand) {
+            if (interaction.isChatInputCommand()){
     
-                await new Command(client, interaction as ChatInputCommandInteraction).run(config).catch((err) => { throw err; })
+                await RunCommand(client, interaction).catch(() => {})
     
             }
 
             if (interaction.isButton()) {
 
-                await onButton(interaction, client).catch((err) => { throw err; })
+                await RunButton(client, interaction).catch(() => {})
 
             }
 
@@ -48,25 +109,38 @@ client.on('ready', async () => {
     })
 
 
-
+    // Listen for voice channel changes
     client.on('voiceStateUpdate', async (oldState, newState) => {
 
-        const disconnected = newState.channelId == undefined
+        if (newState.member.user.id === client.user.id) {
 
-        if (disconnected) {
+            // Run queue updates when the client's voice channel changes
+            onChannelChange(client, oldState, newState)
 
-            // onDisconnect (destroy player)
-            onDisconnect(client, oldState, newState)
-
-        } else {
-
-            // onVoiceChannelJoin (Set new channel w/ newState)
-            await onVoiceChannelJoin(client, oldState, newState)
-            
         }
 
+        // Let the Voice Manager handle
+        await (await client.findVoiceManager(newState.guild.id)).handleStateChange(oldState, newState)
+        
+    })
+
+    // Listen for permissions updates
+    client.on('channelUpdate', async (oldChannel, newChannel) => {
+        if (oldChannel.type === ChannelType.GuildVoice && newChannel.type === ChannelType.GuildVoice) {
+
+            // Get the voice manager
+            const voiceManager = await client.findVoiceManager(oldChannel.guildId)
+            await voiceManager.watchPermissions(oldChannel, newChannel)
+
+        }
     })
 
 })
 
 client.login(process.env.TOKEN);
+
+// Debugging Tools \\
+process.on('unhandledRejection', (reason, p) => {
+    console.warn('Unhandled Rejection at: Promise', p, 'reason:', reason)
+    // console.trace(p)
+})

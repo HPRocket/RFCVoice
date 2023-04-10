@@ -1,51 +1,59 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, Client, Snowflake } from "discord.js";
-import BaseCommand from "../Classes/Commands/BaseCommand";
-import Search from "../Classes/Music/Queue/Actions/Search";
-import { configType } from "../Configs";
-import { RFClient } from "../main";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
+import Search from "../Core/Search";
+import ActionEmbed from "../Responses/Action";
+import Locale from "../Responses/Locale";
+import RFCommand from "./BaseCommand";
 
-export default class Play extends BaseCommand {
-
-    super(client: Client) {
-        this.client = client
-    }
-
-    config = {
-        updateVoiceAnnouncementsChannel: true,
-        sameVC: true,
-        canAutoJoinVC: true,
-    }
+export default class PlayCommand extends RFCommand {
 
     info = {
         name: 'play',
-        description: "Search for a video from YouTube, or enter a link (YouTube, Spotify, Discord Media).",
+        description: "Search for a video or play a link (YouTube, Spotify, Discord).",
         options: [
             {
                 name: "query",
-                description: "Your search query.",
+                description: "A search query, or link to a video/playlist (YouTube, Spotify, Discord).",
                 type: ApplicationCommandOptionType.String,
                 required: true
             },
         ]
     }
 
-    async callback(client: RFClient, interaction: ChatInputCommandInteraction, config: configType) {
+    async callback() {
 
         return new Promise(async (res, rej) => {
 
-            const query = interaction.options.getString('query')
-            const guildId = interaction.guildId as Snowflake
+            const locale = new Locale(this.interaction)
 
-            const track = await new Search(query!).getTrack().catch((err) => { throw err; })
-                if (!track) return console.error("Could not get track!");
+            // Get the user's current voice channel
+            const member = this.interaction.member as GuildMember
+            const channelId = member?.voice.channelId
 
-            // Request Queue to insert track
-            const guildQueue = client.queueMap.get(guildId)
-                if (!guildQueue) return console.error("Could not find guildQueue!");
-            await guildQueue.insertTracks(track);
-            guildQueue.voiceAnnouncementsChannel = interaction.channelId
+            // Get the queue for this guild
+            const queue = this.client.findQueue(this.interaction.guildId, channelId)
+                queue.eventsChannel = this.interaction.channelId // Update the events channel based on this command
 
-            return res(interaction.editReply(`Playing ${track![0].title}.`)) // FEATURE: Need an embed response
+            // Get the user passed source to query
+            const trackSource = this.interaction.options.getString("query", true)
+
+            // Search for the track(s)
+            const tracks = await new Search(trackSource).getTracks()
+
+            // Add the new track(s)
+            const result = queue.add(tracks)
+
+            // Confirm the Play operation
+            if (tracks.length > 1) {
+
+                // Multiple Tracks
+                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.add.trackCount(tracks.length), icon: "📝" }).constructEmbed().embed ]});
+
+            } else {
+                
+                // One Track Only
+                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.add.trackInfo(tracks[0].title, tracks[0].source, tracks[0].author), icon: "📝" }).constructEmbed().embed ]});
+                
+            }
 
         })
 

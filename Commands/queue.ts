@@ -1,43 +1,30 @@
-import { getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
-import { ApplicationCommandOptionType, ChannelType, ChatInputCommandInteraction, Client, GuildMember, Snowflake, VoiceChannel } from "discord.js";
-import BaseCommand from "../Classes/Commands/BaseCommand";
-import QueueEmbed from "../Classes/Music/Embeds/QueueEmbed";
-import Search from "../Classes/Music/Queue/Actions/Search";
-import { configType } from "../Configs";
-import { RFClient } from "../main";
+import QueueEmbed from "../Responses/Queue";
+import RFCommand from "./BaseCommand";
 
-export default class Queue extends BaseCommand {
-
-    super(client: Client) {
-        this.client = client
-    }
-
-    config = {
-        updateVoiceAnnouncementsChannel: false,
-        sameVC: true,
-        canAutoJoinVC: false,
-    }
+export default class QueueCommand extends RFCommand {
 
     info = {
         name: 'queue',
-        description: "Lists all tracks currently in the queue.",
+        description: "Get a list of tracks currently playing.",
     }
 
-    async callback(client: RFClient, interaction: ChatInputCommandInteraction, config: configType) {
+    async callback() {
 
         return new Promise(async (res, rej) => {
 
-            const guildId = interaction.guildId as Snowflake
-            const member = interaction.member as GuildMember
+            const queue = this.client.queueMap.get(this.interaction.guildId)
 
-            let queue = client.queueMap.get(guildId)
-            const queueEmbed = new QueueEmbed(undefined, member.user.id, queue)
-                queue.queueEmbeds.push(queueEmbed);
-            const result = queueEmbed.getEmbed()
+            const queueDisplay = new QueueEmbed({ queue: queue, interaction: this.interaction })
+            const queueEmbed = queueDisplay.constructEmbed()
 
-            const message = await interaction.editReply({ embeds: [ result.embed ], components: [ result.actionRow ] })
-                queueEmbed.messageId = message.id
-            return res(true)
+            // Send the queue's embed
+            const message = await this.interaction.editReply({ embeds: [ queueEmbed?.embed ], components: queueEmbed?.components })
+
+            // Register the resulting message with the embed internally
+            queueDisplay.messageId = message.id
+            queue.queueEmbeds.push(queueDisplay)
+
+            return res(message);
 
         })
 
