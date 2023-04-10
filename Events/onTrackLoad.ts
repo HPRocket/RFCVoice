@@ -6,7 +6,7 @@ import EventEmbed from "../Responses/Event";
 export default async function onTrackLoad(client: RFClient, newTrack: Track, eventsChannel: Snowflake) {
     
     // Display the information needed
-    const embed = new EventEmbed({ content: `🔊｜Now playing: [${newTrack.title}](${newTrack.source}) by ${"`"}${newTrack.author}${"`"}` }).constructEmbed().embed
+    const embed = new EventEmbed({ content: `🔊｜Now playing: [${newTrack.title}](${newTrack.source}) by ${"`"}${newTrack.author}${"`"}.` }).constructEmbed().embed
 
     // Get the channel
     const channel = await client.channels.fetch(eventsChannel).catch(() => {}) as TextChannel

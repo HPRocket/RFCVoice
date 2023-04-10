@@ -263,7 +263,7 @@ export default class Queue {
         })
     }
 
-    async advance() {
+    private async advance() {
 
         // Get the current track's index
         const currentIndex = this.tracks.findIndex(track => track == this.currentTrack)
