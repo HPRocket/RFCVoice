@@ -108,9 +108,49 @@ client.on('ready', async () => {
 
     })
 
-
+    const timeouts: { guildId: string, timeout: NodeJS.Timeout }[] = []
     // Listen for voice channel changes
     client.on('voiceStateUpdate', async (oldState, newState) => {
+
+        // Someone left a channel with the bot inside
+        if (oldState.channel?.members.has(client.user.id)) {
+
+            // Check how many users are left
+            const userCount = Array.from(oldState.channel.members).length
+            if (userCount <= 1) { // 1 user because the bot is technically still inside
+
+                // Disconnect the bot after a set amount of time
+                const timeout = setTimeout(async () => {
+
+                    const botMember = await oldState.guild.members.fetch(client.user.id)
+                    
+                    // Disconnect the bot
+                    await botMember.voice.disconnect("Timeout").catch(() => {})
+
+                }, Number(process.env.TIMEOUT_MS))
+
+                // Save the timeout
+                timeouts.push({
+                    guildId: oldState.guild.id,
+                    timeout: timeout,
+                })
+
+            }
+
+        }
+
+        // Someone joined a channel with the bot inside
+        if (newState.channel?.members.has(client.user.id)) {
+
+            // Get the timeout
+            const timeout = timeouts.find(timeout => timeout.guildId === newState.guild.id)
+
+            // Clear the timeout (if it exists)
+            if (timeout) {
+                clearTimeout(timeout.timeout)
+            }
+
+        }
 
         if (newState.member.user.id === client.user.id) {
 
