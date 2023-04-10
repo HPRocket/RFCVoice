@@ -2,6 +2,7 @@ import { AudioPlayerStatus } from "@discordjs/voice";
 import Queue from "../Classes/Queue";
 import Embed from "./Embed";
 import { APIEmbedField, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Snowflake } from "discord.js";
+import fmtMSS from "../Utils/displayMSS";
 
 export default class QueueEmbed extends Embed {
 
@@ -124,7 +125,6 @@ export default class QueueEmbed extends Embed {
     
         let timeRemaining: string = "`No track is currently playing.`"
         if (queue.player.state.status === AudioPlayerStatus.Playing) {
-            function fmtMSS(s: number){return(s-(s%=60))/60+(9<s?':':':0')+s} // Seconds -> M:SS (Minutes: Seconds)
             timeRemaining = queue.currentTrack ? `${"`"}${fmtMSS(Math.floor(queue.currentResource.playbackDuration / 1000))}${"`"}/${"`"}${fmtMSS(Number(queue.currentTrack.lengthSec))}${"`"}` : "`No track is currently playing.`"
         }
 

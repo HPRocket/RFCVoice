@@ -6,6 +6,8 @@ import skip from './skip'
 import goto from './goto'
 import clear from './clear'
 import queue from './queue'
+import loop from './loop'
+import shuffle from './shuffle'
 
 export default [
 
@@ -17,5 +19,7 @@ export default [
     { name: "goto", class: goto, autoJoin: false, sameChannel: true },
     { name: "clear", class: clear, autoJoin: false, sameChannel: true },
     { name: "queue", class: queue, autoJoin: false, sameChannel: false },
+    { name: "loop", class: loop, autoJoin: false, sameChannel: true },
+    { name: "shuffle", class: shuffle, autoJoin: false, sameChannel: true },
 
 ]

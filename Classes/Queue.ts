@@ -5,6 +5,7 @@ import Track from "./Track";
 import QueueEmbed from "../Responses/Queue";
 import onTrackLoad from "../Events/onTrackLoad";
 import { RFClient } from "../main";
+import randomNumber from "../Utils/randomNumber";
 
 export default class Queue {
 
@@ -148,9 +149,7 @@ export default class Queue {
                     // The track to be removed is the current track
 
                     // Go to the next track (if it exists)
-                    await this.goto(trackIndex + 1).catch((err) => {
-                        this.player.stop() // Stop the player if there is no next track
-                    })
+                    await this.goto(trackIndex + 1).catch(() => {})
 
                 }
 
@@ -188,7 +187,10 @@ export default class Queue {
 
             // Find the requested track
             const track = this.tracks[newTrackIndex]
-                if (!track) return rej("NOTRACK");
+                if (!track) {
+                    this.player.stop()
+                    return rej("NOTRACK");
+                }
 
             // Tell the queue it's waiting to load a track
             this.state.loading = true
@@ -225,22 +227,7 @@ export default class Queue {
     async skip(): Promise<{ oldTrack: Track, newTrack: Track }> {
         return new Promise(async (res, rej) => {
 
-            // Find if the next track exists
-            const nextIndex = this.tracks.findIndex(track => track == this.currentTrack) + 1
-            const nextTrack = this.tracks[nextIndex]
-                if (nextIndex === 0 /* -1 + 1 = 0 */ || !nextTrack) {
-                    // End the current track
-                    this.player.stop()
-
-                    // Return there was no new track played
-                    return res({
-                        oldTrack: this.currentTrack,
-                        newTrack: undefined,
-                    })
-                }
-            
-            // Go to the next track
-            return res(await this.goto(nextIndex));
+            return res(await this.advance().catch((err) => { throw err; }))
 
         })
     }
@@ -263,11 +250,60 @@ export default class Queue {
         })
     }
 
+    setLoop(type: "TRACK" | "QUEUE", value: boolean) {
+
+        // Turn the other one off if it's active
+        if (type === "TRACK") {
+            this.settings.loop.track = value
+            if (value) {
+                this.settings.loop.queue = false // Deactivate the queue loop
+                this.settings.shuffle = false // Deactivate shuffling
+            }
+
+            return this.settings.loop.track;
+        }
+
+        if (type === "QUEUE") {
+            this.settings.loop.queue = value
+            if (value) {
+                this.settings.loop.track = false // Deactivate the track loop
+                this.settings.shuffle = false // Deactivate shuffling
+            }
+
+            return this.settings.loop.queue;
+        }
+
+    }
+
+    setShuffle(value: boolean) {
+
+        this.settings.shuffle = value
+
+        if (value) {
+
+            this.settings.loop.track = false // Deactivate the track loop
+            this.settings.loop.queue = false // Deactivate the queue loop
+
+        } else {
+
+            // Wipe the shuffle data from all the tracks
+
+        }
+
+        return this.settings.shuffle;
+
+    }
+
     private async advance() {
 
         // Get the current track's index
         const currentIndex = this.tracks.findIndex(track => track == this.currentTrack)
 
+        /**
+         * This is to jumpstart the queue when 
+         * the bot is transitioning from idle to playing.
+         */
+        
         // There is no old / current track
         if (currentIndex == -1) {
 
@@ -276,15 +312,69 @@ export default class Queue {
 
         }
 
-        // Find the next track to play
-        const nextTrack = this.tracks[currentIndex + 1]
-        if (nextTrack) {
+        /**
+         * Find the state of the queue. It's either:
+         * Looping Track
+         * Looping Queue
+         * Shuffling
+         * These cannot overlap.
+         */
+        if (this.settings.loop.track) {
 
-            return await this.goto(currentIndex + 1).catch((err) => { throw err })
+            // Play the same track again
+            return await this.goto(currentIndex).catch((err) => { throw err })
+
+        } else if (this.settings.loop.queue) {
+            
+            // Find the next sequential track to play
+            const nextTrack = this.tracks[currentIndex + 1]
+
+            if (!nextTrack) {
+
+                // Start the queue from the top
+                return await this.goto(0).catch((err) => { throw err })
+
+            }
+
+        }
+
+        let upcomingIndex = currentIndex + 1
+        if (this.settings.shuffle) {
+
+            // Get a list of all the not already played tracks in shuffle
+            let unplayedShuffleTracks = this.tracks.filter(track => track.shufflePlayed === false)
+
+            // All tracks have been played
+            if (unplayedShuffleTracks.length === 0) {
+
+                // Reset the shuffle states
+                this.tracks.forEach(track => {
+                    track.shufflePlayed = false
+                })
+
+                // Reset the array
+                unplayedShuffleTracks = this.tracks
+
+            }
+
+            // Pick a random track
+            const upcomingTrack = unplayedShuffleTracks[randomNumber(0, unplayedShuffleTracks.length - 1)]
+
+            // Get the random track's index
+            upcomingIndex = this.tracks.findIndex(track => track == upcomingTrack)
+
+        }
+
+        if (this.tracks[upcomingIndex]) {
+
+            return await this.goto(upcomingIndex).catch((err) => { throw err })
 
         } else {
 
-            return false;
+            return {
+                oldTrack: this.currentTrack,
+                newTrack: undefined,
+            }
 
         }
         

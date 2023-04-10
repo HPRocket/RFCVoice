@@ -19,11 +19,11 @@ export default class Connect {
 
     info = {
         name: 'play',
-        description: "Play a video (YouTube URL).",
+        description: "Search for a video or play a link (YouTube, Spotify, Discord).",
         options: [
             {
-                name: "url",
-                description: "YouTube URL for the track.",
+                name: "query",
+                description: "A search query, or link to a video/playlist (YouTube, Spotify, Discord).",
                 type: ApplicationCommandOptionType.String,
                 required: true
             },
@@ -43,7 +43,7 @@ export default class Connect {
                 queue.eventsChannel = this.interaction.channelId // Update the events channel based on this command
 
             // Get the user passed source to query
-            const trackSource = this.interaction.options.getString("url", true)
+            const trackSource = this.interaction.options.getString("query", true)
 
             // Search for the track(s)
             const tracks = await new Search(trackSource).getTracks()
