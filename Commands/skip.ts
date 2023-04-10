@@ -1,19 +1,8 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
-import { RFClient } from "../main";
-import { joinVoiceChannel } from "@discordjs/voice";
 import ActionEmbed from "../Responses/Action";
+import Locale from "../Responses/Locale";
+import RFCommand from "./BaseCommand";
 
-export default class Connect {
-
-    client: RFClient
-    interaction: ChatInputCommandInteraction
-
-    constructor(client: RFClient, interaction?: ChatInputCommandInteraction) {
-
-        this.client = client
-        this.interaction = interaction
-
-    }
+export default class SkipCommand extends RFCommand {
 
     info = {
         name: 'skip',
@@ -24,6 +13,8 @@ export default class Connect {
 
         return new Promise(async (res, rej) => {
 
+            const locale = new Locale(this.interaction)
+
             // Get the queue
             const queue = this.client.queueMap.get(this.interaction.guildId)
 
@@ -31,7 +22,7 @@ export default class Connect {
             const result = await queue.skip()
 
             // Confirm the Skip operation
-            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Skipped [${result.newTrack.title}](${result.newTrack.source}) by ${"`"}${result.newTrack.author}${"`"}.`, icon: "⏭️" }).constructEmbed().embed ] }));
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.skip(result.newTrack.title, result.newTrack.source, result.newTrack.author), icon: "⏭️" }).constructEmbed().embed ] }));
 
         })
 

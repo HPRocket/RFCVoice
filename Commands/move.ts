@@ -1,18 +1,9 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember } from "discord.js";
-import { RFClient } from "../main";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import ActionEmbed from "../Responses/Action";
+import Locale from "../Responses/Locale";
+import RFCommand from "./BaseCommand";
 
-export default class Move {
-
-    client: RFClient
-    interaction: ChatInputCommandInteraction
-
-    constructor(client: RFClient, interaction?: ChatInputCommandInteraction) {
-
-        this.client = client
-        this.interaction = interaction
-
-    }
+export default class MoveCommand extends RFCommand {
 
     info = {
         name: 'move',
@@ -37,6 +28,8 @@ export default class Move {
 
         return new Promise(async (res, rej) => {
 
+            const locale = new Locale(this.interaction)
+
             // Get the user's current voice channel
             const member = this.interaction.member as GuildMember
             const channelId = member?.voice.channelId
@@ -53,13 +46,13 @@ export default class Move {
             // Move the track
             const result = await queue.move(trackPos - 1, newPos - 1).catch(async (err) => {
 
-                await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Could not move the track to ${"`"}${newPos}${"`"}.`, icon: "🛑" }).constructEmbed(true).embed ] })
+                await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.move.fail(newPos), icon: "🛑" }).constructEmbed(true).embed ] })
                 throw err;
 
             })
             
             // Confirm the Move operation
-            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Moved the track at ${"`"}${trackPos}${"`"} to ${"`"}${newPos}${"`"}`, icon: "🛒" }).constructEmbed().embed ]})); // This is technically untrue if we account for the interal fix the Array automatically does.
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.move.success(trackPos, newPos), icon: "🛒" }).constructEmbed().embed ]})); // This is technically untrue if we account for the interal fix the Array automatically does.
 
         })
 

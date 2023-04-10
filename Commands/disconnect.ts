@@ -1,20 +1,9 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
-import { RFClient } from "../main";
-import { getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
-import Track from "../Classes/Track";
+import { getVoiceConnection } from "@discordjs/voice";
 import ActionEmbed from "../Responses/Action";
+import Locale from "../Responses/Locale";
+import RFCommand from "./BaseCommand";
 
-export default class Disconnect {
-
-    client: RFClient
-    interaction: ChatInputCommandInteraction
-
-    constructor(client: RFClient, interaction?: ChatInputCommandInteraction) {
-
-        this.client = client
-        this.interaction = interaction
-
-    }
+export default class DisconnectCommand extends RFCommand {
 
     info = {
         name: 'disconnect',
@@ -25,13 +14,15 @@ export default class Disconnect {
 
         return new Promise(async (res, rej) => {
 
-            const channel = (await this.interaction.guild.members.fetch(this.client.user.id)).voice.channelId
+            const locale = new Locale(this.interaction)
+
+            const channelId = (await this.interaction.guild.members.fetch(this.client.user.id)).voice.channelId
             const connection = getVoiceConnection(this.interaction.guildId)
 
             connection.destroy()
 
             // Confirm the Disconnect operation
-            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Disconnected from <#${channel}>.`, icon: "🚪" }).constructEmbed().embed ] }));
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.channel.disconnect(channelId), icon: "🚪" }).constructEmbed().embed ] }));
 
         })
 

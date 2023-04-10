@@ -3,15 +3,15 @@ import en_US from './en_US'
 
 export default class Locale {
 
-    locale: typeof en_US
+    responses: typeof en_US.responses
 
     constructor(interaction: Interaction) {
 
         const locale = interaction.locale
         if (locale == Languages.EnglishUS) {
-            this.locale = en_US
+            this.responses = en_US.responses
         } else {
-            this.locale = en_US // Default to US English
+            this.responses = en_US.responses // Default to US English
         }
 
     }

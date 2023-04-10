@@ -1,18 +1,9 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember } from "discord.js";
-import { RFClient } from "../main";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import ActionEmbed from "../Responses/Action";
+import Locale from "../Responses/Locale";
+import RFCommand from "./BaseCommand";
 
-export default class GoTo {
-
-    client: RFClient
-    interaction: ChatInputCommandInteraction
-
-    constructor(client: RFClient, interaction?: ChatInputCommandInteraction) {
-
-        this.client = client
-        this.interaction = interaction
-
-    }
+export default class GotoCommand extends RFCommand {
 
     info = {
         name: 'goto',
@@ -31,6 +22,8 @@ export default class GoTo {
 
         return new Promise(async (res, rej) => {
 
+            const locale = new Locale(this.interaction)
+
             // Get the user passed index to query (Base 1)
             const trackIndex = this.interaction.options.getNumber("position", true)
 
@@ -45,13 +38,13 @@ export default class GoTo {
             // Go to the track (if possible)
             const track = await queue.goto(trackIndex - 1).catch(async (err) => {
 
-                await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Could not go to ${"`"}${trackIndex}${"`"}.`, icon: "🛑" }).constructEmbed(true).embed ] })
+                await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.goto.fail(trackIndex), icon: "🛑" }).constructEmbed(true).embed ] })
                 throw err;
 
             })
 
             // Confirm the Go To operation
-            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Went to ${"`"}${trackIndex}${"`"}\n[${track.newTrack.title}](${track.newTrack.source}) by ${"`"}${track.newTrack.author}${"`"}.`, icon: "⏭️" }).constructEmbed().embed ] }));
+            return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.goto.success(trackIndex, track.newTrack.title, track.newTrack.source, track.newTrack.author), icon: "⏭️" }).constructEmbed().embed ] }));
 
         })
 

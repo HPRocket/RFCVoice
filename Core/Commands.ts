@@ -82,26 +82,3 @@ export async function RegisterCommands(client: RFClient) {
     }
 
 }
-
-
-export class RFCommand {
-
-    client: RFClient
-    interaction: ChatInputCommandInteraction
-
-    constructor(client: RFClient, interaction?: ChatInputCommandInteraction) {
-
-        this.client = client
-        this.interaction = interaction
-
-    }
-
-    info = {}
-
-    async callback() {
-
-        // insert callback here
-
-    }
-
-}

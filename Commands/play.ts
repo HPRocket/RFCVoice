@@ -1,21 +1,10 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
-import { RFClient } from "../main";
-import { joinVoiceChannel } from "@discordjs/voice";
-import Track from "../Classes/Track";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import Search from "../Core/Search";
 import ActionEmbed from "../Responses/Action";
+import Locale from "../Responses/Locale";
+import RFCommand from "./BaseCommand";
 
-export default class Connect {
-
-    client: RFClient
-    interaction: ChatInputCommandInteraction
-
-    constructor(client: RFClient, interaction?: ChatInputCommandInteraction) {
-
-        this.client = client
-        this.interaction = interaction
-
-    }
+export default class PlayCommand extends RFCommand {
 
     info = {
         name: 'play',
@@ -33,6 +22,8 @@ export default class Connect {
     async callback() {
 
         return new Promise(async (res, rej) => {
+
+            const locale = new Locale(this.interaction)
 
             // Get the user's current voice channel
             const member = this.interaction.member as GuildMember
@@ -55,12 +46,12 @@ export default class Connect {
             if (tracks.length > 1) {
 
                 // Multiple Tracks
-                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Queued ${tracks.length} tracks.`, icon: "📝" }).constructEmbed().embed ]});
+                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.add.trackCount(tracks.length), icon: "📝" }).constructEmbed().embed ]});
 
             } else {
                 
                 // One Track Only
-                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: `Queued [${tracks[0].title}](${tracks[0].source}) by ${"`"}${tracks[0].author}${"`"}`, icon: "📝" }).constructEmbed().embed ]});
+                return await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.add.trackInfo(tracks[0].title, tracks[0].source, tracks[0].author), icon: "📝" }).constructEmbed().embed ]});
                 
             }
 

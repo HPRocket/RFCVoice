@@ -1,18 +1,7 @@
-import { ChatInputCommandInteraction } from "discord.js";
-import { RFClient } from "../main";
 import QueueEmbed from "../Responses/Queue";
+import RFCommand from "./BaseCommand";
 
-export default class QueueCommand {
-
-    client: RFClient
-    interaction: ChatInputCommandInteraction
-
-    constructor(client: RFClient, interaction?: ChatInputCommandInteraction) {
-
-        this.client = client
-        this.interaction = interaction
-
-    }
+export default class QueueCommand extends RFCommand {
 
     info = {
         name: 'queue',

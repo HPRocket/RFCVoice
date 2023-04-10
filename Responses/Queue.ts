@@ -3,10 +3,12 @@ import Queue from "../Classes/Queue";
 import Embed from "./Embed";
 import { APIEmbedField, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Snowflake } from "discord.js";
 import fmtMSS from "../Utils/displayMSS";
+import Locale from "./Locale";
 
 export default class QueueEmbed extends Embed {
 
     queue: Queue
+    locale: Locale
     pageIndex: number // 0-based index of the current embed page (relates to outer array below)
     pages: APIEmbedField[][] // An array of the fields for each page
     messageId: Snowflake
@@ -20,6 +22,7 @@ export default class QueueEmbed extends Embed {
         
         this.queue = queue
         this.userId = interaction.member.user.id
+        this.locale = new Locale(interaction)
 
     }
 
@@ -95,7 +98,7 @@ export default class QueueEmbed extends Embed {
                 description: this.description,
                 fields: this.pages[this.pageIndex],
                 footer: {
-                    text: `Page ${this.pageIndex + 1} of ${this.pages.length}.`
+                    text: this.locale.responses.queue.pageCount(this.pageIndex + 1, this.pages.length)
                 },
             },
 
@@ -110,22 +113,22 @@ export default class QueueEmbed extends Embed {
         // Parse description info from these criteria
         let queueStatus: string
         if (queue.settings.loop.track) {
-            queueStatus = "🔂｜Looping the current track."
+            queueStatus = this.locale.responses.queue.status.loop.track
         } else if (queue.settings.loop.queue) {
-            queueStatus = "🔁｜Looping the queue."
+            queueStatus = this.locale.responses.queue.status.loop.queue
         } else if (queue.settings.shuffle) {
-            queueStatus = "🔀｜Shuffling the queue."
+            queueStatus = this.locale.responses.queue.status.shuffle
         } else {
-            queueStatus = "🟦｜Not looping."
+            queueStatus = this.locale.responses.queue.status.loop.none
         }
     
         if (queue.player.state.status === AudioPlayerStatus.Paused) {
-            queueStatus = queueStatus.concat(`\n⏸️｜The queue is currently paused.`)
+            queueStatus = queueStatus.concat(`\n${this.locale.responses.queue.status.paused}`)
         }
     
-        let timeRemaining: string = "`No track is currently playing.`"
+        let timeRemaining: string = this.locale.responses.queue.playing.none
         if (queue.player.state.status === AudioPlayerStatus.Playing) {
-            timeRemaining = queue.currentTrack ? `${"`"}${fmtMSS(Math.floor(queue.currentResource.playbackDuration / 1000))}${"`"}/${"`"}${fmtMSS(Number(queue.currentTrack.lengthSec))}${"`"}` : "`No track is currently playing.`"
+            timeRemaining = queue.currentTrack ? `${"`"}${fmtMSS(Math.floor(queue.currentResource.playbackDuration / 1000))}${"`"}/${"`"}${fmtMSS(Number(queue.currentTrack.lengthSec))}${"`"}` : this.locale.responses.queue.playing.none
         }
 
 
@@ -142,7 +145,7 @@ export default class QueueEmbed extends Embed {
             // Push a track into the current page
             pages[currentPage].push({
                 name: '\u200b',
-                value: `${track == queue.currentTrack ? `**>> ${trackPosition}:**    [${track.title}](${track.source})` : `**${trackPosition}:**    [${track.title}](${track.source})`}\nBy: ${"`"}${track.author}${"`"}`
+                value: this.locale.responses.queue.track(trackPosition, track.title, track.source, track.author, track == queue.currentTrack),
             })
 
             if (pages[currentPage].length >= 25) {
@@ -155,8 +158,8 @@ export default class QueueEmbed extends Embed {
         }
 
         // Save all the embed info
-        this.title = "Queue"
-        this.description = `Channel: <#${queue.channelId}>\n${queueStatus}\n${timeRemaining}`
+        this.title = this.locale.responses.queue.title
+        this.description = `${this.locale.responses.queue.channel}: <#${queue.channelId}>\n${queueStatus}\n${timeRemaining}`
 
         // Save all the pages
         this.pages = pages

@@ -1,26 +1,28 @@
 import { ButtonInteraction } from "discord.js";
 import { RFClient } from "../main";
+import Locale from "../Responses/Locale";
 
 export default async function RunButton(client: RFClient, interaction: ButtonInteraction) {
 
     const buttonId = interaction.customId
+    const locale = new Locale(interaction)
 
     // Queue Page Buttons
     if (buttonId === "previousQueuePage" || buttonId === "nextQueuePage") {
 
         // Get the queue
         const queue = client.queueMap.get(interaction.guildId)
-            if (!queue) return await interaction.reply({ content: "Could not go to the requested page.", ephemeral: true })
+            if (!queue) return await interaction.reply({ content: locale.responses.queue.buttons.pageFail, ephemeral: true })
         
         // Get the message Id of the embed the button is attached to
         const messageId = interaction.message.id
 
         // Find the message's record within the embed
         const embed = queue.queueEmbeds.find(queueEmbed => queueEmbed.messageId === messageId)
-            if (!embed) return await interaction.reply({ content: "This embed has expired! You can make a new one using `/queue`.", ephemeral: true })
+            if (!embed) return await interaction.reply({ content: locale.responses.queue.buttons.pageExpire, ephemeral: true })
         
         // Make sure the user is authorized to use this embed
-        if (embed.userId !== interaction.user.id) return await interaction.reply({ content: "Make your own embed using `/queue` to use this feature.", ephemeral: true })
+        if (embed.userId !== interaction.user.id) return await interaction.reply({ content: locale.responses.queue.buttons.permissionsFail, ephemeral: true })
 
         // Renew the embed's content and timer
         embed.renew()
