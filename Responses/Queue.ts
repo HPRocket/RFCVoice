@@ -29,8 +29,8 @@ export default class QueueEmbed extends Embed {
 
         // Calculate the current track page
         const currentTrackIndex = this.queue.tracks.findIndex(track => track == this.queue.currentTrack)
-        let currentTrackPage = 0
-        for (let page = 1; page < this.pages.length; page++) {
+        let currentTrackPage = 1 // Base-1 Index
+        for (let page = 1; page <= this.pages.length; page++) {
 
             // Get the range of pages that the current track might fall under given the page number
             
@@ -66,7 +66,7 @@ export default class QueueEmbed extends Embed {
         }
 
         // If index not specified, use the page of the current track.
-        this.pageIndex = pageIndex ?? currentTrackPage
+        this.pageIndex = pageIndex ?? currentTrackPage - 1
 
         const row = new ActionRowBuilder()
             .addComponents([
