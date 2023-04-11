@@ -2,8 +2,11 @@ import { ChatInputCommandInteraction, GuildMember } from "discord.js";
 import { RFClient } from "../main";
 import Commands from '../Commands'
 import { joinVoiceChannel } from "@discordjs/voice";
+import Locale from "../Responses/Locale";
 
 export default async function RunCommand(client: RFClient, interaction: ChatInputCommandInteraction) {
+
+    const locale = new Locale(interaction)
 
     // Get the callback
     const command = Commands.find(command => command.name === interaction.commandName)
@@ -21,7 +24,7 @@ export default async function RunCommand(client: RFClient, interaction: ChatInpu
 
             // The bot is not in a voice channel
 
-            return await interaction.editReply("Please connect me to a voice channel to run this command!").catch((err) => { throw err; })
+            return await interaction.editReply(locale.responses.permissions.vcRequired).catch((err) => { throw err; })
 
         }
 
@@ -46,7 +49,7 @@ export default async function RunCommand(client: RFClient, interaction: ChatInpu
         
         if (clientMember.voice.channelId && (clientMember.voice.channelId !== interactionMember.voice.channelId)) {
 
-            return await interaction.editReply("Please join my voice channel!").catch((err) => { throw err; })
+            return await interaction.editReply(locale.responses.permissions.joinChannel).catch((err) => { throw err; })
 
         }
 

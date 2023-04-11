@@ -10,6 +10,13 @@ export default {
 
         },
 
+        "permissions": {
+
+            "joinChannel": `Please join my voice channel to run this command!`,
+            "vcRequired": `Please connect me to a voice channel to run this command!`,
+
+        },
+
         "queue": {
 
             "buttons": {
