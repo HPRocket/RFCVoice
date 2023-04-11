@@ -56,7 +56,8 @@ export default class SeekCommand extends RFCommand {
                 await queue.seek(time).catch(async (err) => {
 
                     // Send a fail
-                    return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.seek.fail(time), icon: "🛑" }).constructEmbed().embed ] }));
+                    res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.seek.fail(time), icon: "🛑" }).constructEmbed().embed ] }));
+                    throw err;
 
                 })
 
@@ -69,7 +70,8 @@ export default class SeekCommand extends RFCommand {
                 await queue.seek(-time).catch(async (err) => {
 
                     // Send a fail
-                    return res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.seek.fail(time), icon: "🛑" }).constructEmbed().embed ] }));
+                    res(await this.interaction.editReply({ embeds: [ new ActionEmbed({ content: locale.responses.tracks.seek.fail(time), icon: "🛑" }).constructEmbed().embed ] }));
+                    throw err;
 
                 })
 

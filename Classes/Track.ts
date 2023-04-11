@@ -59,20 +59,31 @@ export default class Track {
 
     }
     
-    async seek(seconds: number /* + is forward, - is backwards */) {
+    async seek(seconds: number /* + is forward, - is backwards */): Promise<{ resource: AudioResource<unknown>, passedTime: number }> {
+        return new Promise(async (res, rej) => {
 
-        // Save passed time
-        this.passedTime += seconds // We add the old time plus any new time (seeking off the most recent resource)
+            // Check if the operation is safe (0 < targetTime <= this.lengthSec)
+            const targetTime = this.passedTime + seconds
+            if (targetTime > this.lengthSec || targetTime < 0) {
 
-        // Load a new resource
-        const newResource = await this.load(this.passedTime).catch((err) => { throw err; }) // Use the entire passed time since we're (re)loading the original resource
+                // Time is greater than the max or less than 0
+                return rej("OUTOFRANGE");
 
-        // Return the new resource with the passed time
-        return {
-            resource: newResource,
-            passedTime: this.passedTime
-        }
+            }
 
+            // Load a new resource
+            const newResource = await this.load(targetTime).catch((err) => { throw err; }) // Use the entire passed time since we're (re)loading the original resource
+
+            // Save passed time
+            this.passedTime += seconds // We add the old time plus any new time (seeking off the most recent resource)
+
+            // Return the new resource with the passed time
+            return res({
+                resource: newResource,
+                passedTime: this.passedTime
+            })
+
+        })
     }
 
 }

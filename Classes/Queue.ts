@@ -253,7 +253,9 @@ export default class Queue {
     async seek(seconds: number) {
         return new Promise(async (res, rej) => {
 
-            const result = await this.currentTrack?.seek(seconds).catch((err) => { throw err; })
+            if (!this.currentTrack) return rej("NOTRACK")
+
+            const result = await this.currentTrack.seek(seconds).catch((err) => { rej(err); throw err; })
             
             // Save the new resource
             this.currentResource = result.resource
