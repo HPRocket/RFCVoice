@@ -8,6 +8,7 @@ import clear from './clear'
 import queue from './queue'
 import loop from './loop'
 import shuffle from './shuffle'
+import seek from './seek'
 
 export default [
 
@@ -21,5 +22,6 @@ export default [
     { name: "queue", class: queue, autoJoin: false, sameChannel: false },
     { name: "loop", class: loop, autoJoin: false, sameChannel: true },
     { name: "shuffle", class: shuffle, autoJoin: false, sameChannel: true },
+    { name: "seek", class: seek, autoJoin: false, sameChannel: true },
 
 ]

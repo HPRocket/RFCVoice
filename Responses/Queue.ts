@@ -128,7 +128,7 @@ export default class QueueEmbed extends Embed {
     
         let timeRemaining: string = this.locale.responses.queue.playing.none
         if (queue.player.state.status === AudioPlayerStatus.Playing) {
-            timeRemaining = queue.currentTrack ? `${"`"}${fmtMSS(Math.floor(queue.currentResource.playbackDuration / 1000))}${"`"}/${"`"}${fmtMSS(Number(queue.currentTrack.lengthSec))}${"`"}` : this.locale.responses.queue.playing.none
+            timeRemaining = queue.currentTrack ? `${"`"}${fmtMSS( Math.floor( queue.currentResource.playbackDuration / 1000 ) + queue.currentTrack.passedTime)}${"`"}/${"`"}${fmtMSS( Number(queue.currentTrack.lengthSec) )}${"`"}` : this.locale.responses.queue.playing.none
         }
 
 

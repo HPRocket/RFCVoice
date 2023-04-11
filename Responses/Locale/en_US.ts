@@ -88,6 +88,14 @@ export default {
                 "success": (trackPos: number, title: string, source: string, authors: string) => `Removed [${title}](${source}) by ${"`"}${authors}${"`"} from position ${"`"}${trackPos}${"`"}.`,
             },
 
+            "seek": {
+                "fail": (seconds: number) => `Could not seek the track ${"`"}${seconds}${"`"} seconds.`,
+                "success": {
+                    "backwards": (seconds: number) => `Went backwards ${"`"}${seconds}${"`"} seconds.`,
+                    "forwards": (seconds: number) => `Went forwards ${"`"}${seconds}${"`"} seconds.`,
+                },
+            },
+
             "shuffle": {
                 "off": `Stopped shuffling the queue.`,
                 "on": `Now shuffling the queue.`,

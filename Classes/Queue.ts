@@ -250,6 +250,23 @@ export default class Queue {
         })
     }
 
+    async seek(seconds: number) {
+        return new Promise(async (res, rej) => {
+
+            const result = await this.currentTrack?.seek(seconds).catch((err) => { throw err; })
+            
+            // Save the new resource
+            this.currentResource = result.resource
+
+            // Play the new resource
+            this.player.play(this.currentResource)
+
+            // Return a success
+            return res(result);
+
+        })
+    }
+
     setLoop(type: "TRACK" | "QUEUE", value: boolean) {
 
         // Turn the other one off if it's active
