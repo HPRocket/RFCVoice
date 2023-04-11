@@ -12,7 +12,7 @@ export default class PlayCommand extends RFCommand {
         options: [
             {
                 name: "query",
-                description: "A search query, or link to a video/playlist (YouTube, Spotify, Discord).",
+                description: "A search query, or a link to a video/playlist (YouTube, Spotify, Discord).",
                 type: ApplicationCommandOptionType.String,
                 required: true
             },
