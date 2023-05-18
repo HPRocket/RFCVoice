@@ -13,7 +13,7 @@ export default {
         "permissions": {
 
             "joinChannel": `Please join my voice channel to run this command!`,
-            "vcRequired": `Please connect me to a voice channel to run this command!`,
+            "vcRequired": `Please connect me to a voice channel to run this command!`
 
         },
 
@@ -23,7 +23,7 @@ export default {
 
                 "pageExpire": `This embed has expired! You can make a new one using ${"`"}/queue${"`"}.`,
                 "pageFail": `Could not go to the requested page.`,
-                "permissionsFail": `Make your own embed using ${"`"}/queue${"`"} to use this feature.`,
+                "permissionsFail": `Make your own embed using ${"`"}/queue${"`"} to use this feature.`
 
             },
 
@@ -34,6 +34,8 @@ export default {
             "playing": {
 
                 "none": `${"`"}No track is currently playing.${"`"}`,
+                "pause": "Pausing the queue.",
+                "resume": "Resuming the queue."
 
             },
 

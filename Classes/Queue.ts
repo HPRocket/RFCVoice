@@ -182,6 +182,34 @@ export default class Queue {
 
     }
 
+    /**
+     * 
+     * @param force Force a specific State
+     * @returns The pause state of the queue (example: true means the queue was paused).
+     */
+    togglePause(force?: boolean): boolean {
+
+        // Check the player's state
+        const isPaused = this.player.state.status === AudioPlayerStatus.Paused
+
+        if (isPaused) {
+
+            // Unpause the queue
+            this.player.unpause()
+
+            return false;
+
+        } else {
+
+            // Pause the queue
+            this.player.pause()
+
+            return true;
+
+        }
+
+    }
+
     async goto(newTrackIndex: number): Promise<{ oldTrack: Track, newTrack: Track }> {
         return new Promise(async (res, rej) => {
 

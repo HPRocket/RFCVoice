@@ -1,5 +1,7 @@
 import disconnect from './disconnect'
 import play from './play'
+import pause from './pause'
+import resume from './resume'
 import remove from './remove'
 import move from './move'
 import skip from './skip'
@@ -13,6 +15,8 @@ import seek from './seek'
 export default [
 
     { name: "play", class: play, autoJoin: true, sameChannel: true },
+    { name: "pause", class: pause, autoJoin: false, sameChannel: true },
+    { name: "resume", class: resume, autoJoin: false, sameChannel: true },
     { name: "disconnect", class: disconnect, autoJoin: false, sameChannel: false },
     { name: "remove", class: remove, autoJoin: false, sameChannel: true },
     { name: "move", class: move, autoJoin: false, sameChannel: true },
