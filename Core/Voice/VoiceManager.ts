@@ -49,7 +49,7 @@ export default class VoiceManager {
             ]
         }).catch((err) => { throw err; });
 
-        voiceChannel.setParent(this.channelsCategory, { lockPermissions: false });
+        await voiceChannel.setParent(this.channelsCategory, { lockPermissions: false });
 
         // Connect the user to the new channel
         await this.newState.setChannel(voiceChannel).catch(() => {});
