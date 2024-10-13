@@ -233,7 +233,7 @@ export default class Queue {
             this.currentResource = resource
 
             // Tell the player to switch resources
-            this.player.play(this.currentResource)
+            const r = this.player.play(this.currentResource)
 
             // Save the old track
             const oldTrack = this.currentTrack
@@ -444,7 +444,7 @@ export default class Queue {
         })
 
         this.events.on(this.eventNames.track.load, async (newTrack: Track) => {
-
+            
             if (!this.eventsChannel) return;
             return await onTrackLoad(client, newTrack, this.eventsChannel)
 

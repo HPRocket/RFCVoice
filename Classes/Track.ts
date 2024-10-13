@@ -1,19 +1,13 @@
 import { AudioResource, createAudioResource } from "@discordjs/voice"
 import playdl from 'play-dl'
+import * as ytdl from '@distube/ytdl-core'
 
 export async function createResource(track: Track, seekSec?: number) {
 
     if (track.sourceType === "YOUTUBE") {
+        let stream = ytdl(track.source, { filter: "audioonly", range: {start: seekSec ?? 0} })
 
-        let stream = await playdl.stream(track.source, {
-            seek: seekSec ?? 0,
-        }).catch(err => {
-            throw err;
-        })
-
-        const resource = createAudioResource(stream.stream, {
-            inputType: stream.type,
-        });
+        const resource = createAudioResource(stream);
         resource.playStream.on('error', error => {
 
             console.error('Error:', error.message, 'with track', resource.metadata);

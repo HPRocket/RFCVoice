@@ -11,11 +11,12 @@
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
     "@discordjs/voice": "^0.16.0",
+    "@distube/ytdl-core": "^4.14.4",
     "discord.js": "^14.9.0",
     "dotenv": "^16.0.3",
     "ffmpeg-static": "^5.1.0",
     "get-video-duration": "^4.1.0",
-    "play-dl": "^1.9.6",
+    "play-dl": "^1.9.7",
     "tweetnacl": "^1.0.3"
   }
 }
